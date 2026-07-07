@@ -36,7 +36,7 @@ public class EntityPotionEffectScriptEvent extends BukkitScriptEvent implements 
     // <context.override> returns whether the new potion effect will override the old.
     // <context.new_effect_data> returns the new potion effect in <@link language Potion Effect Format>.
     // <context.old_effect_data> returns the old potion effect in <@link language Potion Effect Format>.
-    // <context.effect_type> returns the name of the modified potion effect type.
+    // <context.effect_type> returns the key name of the modified potion effect type (for example 'slowness').
     //
     // @Determine
     // "OVERRIDE:<ElementTag(Boolean)>" to set whether the new potion effect should override.
@@ -85,7 +85,7 @@ public class EntityPotionEffectScriptEvent extends BukkitScriptEvent implements 
         if (!runGenericSwitchCheck(path, "cause", CoreUtilities.toLowerCase(event.getCause().name()))) {
             return false;
         }
-        if (!runGenericSwitchCheck(path, "effect", CoreUtilities.toLowerCase(event.getModifiedType().getName()))) {
+        if (!runGenericSwitchCheck(path, "effect", CoreUtilities.toLowerCase(event.getModifiedType().getKey().getKey()))) {
             return false;
         }
         return super.matches(path);
@@ -114,7 +114,7 @@ public class EntityPotionEffectScriptEvent extends BukkitScriptEvent implements 
             case "entity" -> entity.getDenizenObject();
             case "cause" -> new ElementTag(event.getCause());
             case "action" -> new ElementTag(event.getAction());
-            case "effect_type" -> new ElementTag(event.getModifiedType().getName());
+            case "effect_type" -> new ElementTag(event.getModifiedType().getKey().getKey());
             case "override" -> new ElementTag(event.isOverride());
             case "new_effect" -> event.getNewEffect() == null ? null : new ElementTag(ItemPotion.effectToLegacyString(event.getNewEffect(), null));
             case "old_effect" -> event.getOldEffect() == null ? null : new ElementTag(ItemPotion.effectToLegacyString(event.getOldEffect(), null));
