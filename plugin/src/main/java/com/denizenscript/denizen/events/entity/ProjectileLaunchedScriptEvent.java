@@ -65,7 +65,7 @@ public class ProjectileLaunchedScriptEvent extends BukkitScriptEvent implements 
                 yield projectile;
             }
             case "projectile" -> projectile;
-            case "shooter" -> shooter.getDenizenObject();
+            case "shooter" -> shooter == null ? null : shooter.getDenizenObject();
             default -> super.getContext(name);
         };
     }
