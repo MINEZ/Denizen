@@ -311,16 +311,19 @@ public class DialogScriptContainer extends ScriptContainer {
     //     message: <text>
     // -->
 
-    @SuppressWarnings("unchecked")
     public DialogScriptContainer(YamlConfiguration configurationSection, String scriptContainerName) {
+        super(escapeProceduralTags(configurationSection), scriptContainerName);
+    }
+
+    /** 将 procedural 段中的点击期标签转义后写回配置。 */
+    public static YamlConfiguration escapeProceduralTags(YamlConfiguration configurationSection) {
         if (configurationSection.contains("procedural")) {
-            List<Object> procedural = (List<Object>) DialogScriptHelper.deeplyEscapeTags(
+            configurationSection.set("procedural", DialogScriptHelper.deeplyEscapeTags(
                     configurationSection.getList("procedural"),
                     "<context.connection",
-                    "<context.inputs");
-            configurationSection.set("procedural", procedural);
+                    "<context.inputs"));
         }
-        super(configurationSection, scriptContainerName);
+        return configurationSection;
     }
 
     public DialogScriptHelper.InputType parseInput(String type) {
