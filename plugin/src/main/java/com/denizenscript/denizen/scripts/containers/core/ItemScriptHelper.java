@@ -11,6 +11,7 @@ import com.denizenscript.denizen.objects.MaterialTag;
 import com.denizenscript.denizen.objects.PlayerTag;
 import com.denizenscript.denizen.tags.BukkitTagContext;
 import com.denizenscript.denizen.utilities.BukkitImplDeprecations;
+import com.denizenscript.denizen.utilities.CookingRecipes;
 import com.denizenscript.denizen.utilities.PaperAPITools;
 import com.denizenscript.denizen.utilities.Utilities;
 import com.denizenscript.denizencore.DenizenCore;
@@ -35,6 +36,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockCookEvent;
 import org.bukkit.event.inventory.*;
+import org.bukkit.event.server.ServerLoadEvent;
 import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -56,6 +58,7 @@ public class ItemScriptHelper implements Listener {
     public static void removeDenizenRecipes() {
         smithingRetain.clear();
         recipeCache.clear();
+        CookingRecipes.clearCache();
         recipeIdToItemScript.clear();
         Iterator<Recipe> recipeIterator = Bukkit.recipeIterator();
         ArrayList<NamespacedKey> keys = new ArrayList<>();
@@ -370,11 +373,18 @@ public class ItemScriptHelper implements Listener {
             }
         }
         NMSHandler.itemHelper.restoreRecipeFinalization();
+        CookingRecipes.clearCache();
     }
 
     @EventHandler
     public void scriptReload(ScriptReloadEvent event) {
         rebuildRecipes();
+    }
+
+    @EventHandler
+    public void onServerLoad(ServerLoadEvent event) {
+        // 服务器启动与 /reload 都会重建配方表，缓存必须跟着失效。
+        CookingRecipes.clearCache();
     }
 
     public static boolean isItemscript(ItemStack item) {
