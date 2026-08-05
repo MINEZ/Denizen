@@ -2,7 +2,6 @@ package com.denizenscript.denizen.paper.events;
 
 import com.denizenscript.denizen.paper.containers.DialogScriptContainer;
 import com.denizenscript.denizen.paper.containers.DialogScriptHelper;
-import com.denizenscript.denizen.paper.objects.ConnectionTag;
 import com.denizenscript.denizen.utilities.implementation.BukkitScriptEntryData;
 import com.denizenscript.denizencore.events.ScriptEvent;
 import com.denizenscript.denizencore.objects.ObjectTag;
@@ -41,8 +40,8 @@ public class PlayerCustomClickScriptEvent extends ScriptEvent {
     // see <@link language Dialog Buttons>.
     //
     // @Context
-    // <context.connection> returns the ConnectionTag that clicked.
     // <context.button_id> returns the ID of the clicked button.
+    // <player> returns the player who clicked, when the click came from an in-game player.
     // <context.namespace> returns the namespace of the click action, 'denizen' for dialog script buttons.
     // <context.inputs> returns a MapTag of all input values in the dialog.
     // <context.[input_id]> returns the value of a specific input field.
@@ -81,7 +80,6 @@ public class PlayerCustomClickScriptEvent extends ScriptEvent {
     @Override
     public ObjectTag getContext(String name) {
         return switch (name) {
-            case "connection" -> new ConnectionTag(event.getCommonConnection());
             case "inputs" -> getInputs(dialogData, event.getDialogResponseView());
             case "reflect_event" -> new JavaReflectedObjectTag(event);
             case "namespace" -> new ElementTag(event.getIdentifier().namespace());
@@ -136,7 +134,6 @@ public class PlayerCustomClickScriptEvent extends ScriptEvent {
             InstantQueue queue = new InstantQueue(container.getName());
             queue.addEntries(entries);
             queue.setContextSource(name -> switch (name) {
-                case "connection" -> new ConnectionTag(event.getCommonConnection());
                 case "button_id" -> new ElementTag(pathInfo.buttonId());
                 case "inputs" -> getInputs(dialogData, event.getDialogResponseView());
                 case "namespace" -> new ElementTag(event.getIdentifier().namespace());

@@ -258,7 +258,6 @@ public class DialogScriptContainer extends ScriptContainer {
     // - narrate "Hello"
     //
     // Available context values:
-    // <context.connection> returns the ConnectionTag of the player.
     // <context.button_id> returns the ID of the button clicked.
     // <context.namespace> returns the namespace of the dialog (e.g., 'denizen').
     // <context.inputs> returns a MapTag of all active input fields.
@@ -320,7 +319,6 @@ public class DialogScriptContainer extends ScriptContainer {
         if (configurationSection.contains("procedural")) {
             configurationSection.set("procedural", DialogScriptHelper.deeplyEscapeTags(
                     configurationSection.getList("procedural"),
-                    "<context.connection",
                     "<context.inputs"));
         }
         return configurationSection;
