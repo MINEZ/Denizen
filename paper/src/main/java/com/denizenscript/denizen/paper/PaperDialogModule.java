@@ -5,11 +5,9 @@ import com.denizenscript.denizen.objects.PlayerTag;
 import com.denizenscript.denizen.paper.commands.ShowDialogCommand;
 import com.denizenscript.denizen.paper.containers.DialogScriptContainer;
 import com.denizenscript.denizen.paper.events.PlayerCustomClickScriptEvent;
-import com.denizenscript.denizen.paper.objects.ConnectionTag;
 import com.denizenscript.denizen.tags.BukkitTagContext;
 import com.denizenscript.denizencore.DenizenCore;
 import com.denizenscript.denizencore.events.ScriptEvent;
-import com.denizenscript.denizencore.objects.ObjectFetcher;
 import com.denizenscript.denizencore.objects.core.ScriptTag;
 import com.denizenscript.denizencore.scripts.ScriptRegistry;
 import org.bukkit.Bukkit;
@@ -26,7 +24,6 @@ public class PaperDialogModule {
         ScriptRegistry._registerType("dialog", DialogScriptContainer.class);
         DenizenCore.commandRegistry.registerCommand(ShowDialogCommand.class);
         ScriptEvent.registerScriptEvent(PlayerCustomClickScriptEvent.class);
-        ObjectFetcher.registerWithObjectFetcher(ConnectionTag.class, ConnectionTag.tagProcessor).setAsNOtherCode();
         Bukkit.getPluginManager().registerEvents(new PlayerCustomClickScriptEvent.DialogEvents(), Denizen.getInstance());
         registerPlayerMechanisms();
     }
