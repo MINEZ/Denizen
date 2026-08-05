@@ -41,6 +41,40 @@ git rebase upstream/dev
 
 索引会在服务器加载与 Denizen 脚本重载时失效重建。注意 `/minecraft:reload`（数据包重载）不会触发重建，此时需手动执行一次 `/denizen reload scripts`。
 
+**对话框系统。** 一套基于 Paper dialog API 的 `dialog` 脚本容器，用于构建原版客户端的 UI 对话框：
+
+```yaml
+my_dialog:
+    type: dialog
+    base:
+        type: multi
+        title: <&e>主菜单
+        columns: 1
+        exit button:
+            label: 关闭
+    buttons:
+        greet:
+            label: 打招呼
+            script:
+            - narrate 你好！
+```
+
+配套内容：
+
+| 名称 | 类型 | 说明 |
+| --- | --- | --- |
+| `showdialog [<dialog>] (def:<ListTag>)` | 命令 | 为队列关联的玩家打开对话框，可按 `definitions` 传入定义 |
+| `player custom click` | 世界事件 | 玩家点击自定义动作时触发，含 `button_id`、`namespace` 两个开关 |
+| `ConnectionTag` | 对象类型 | 代表一个玩家连接，主要用于对话框按钮的 `<context.connection>` |
+| `PlayerTag.show_dialog` | 机制 | 直接为玩家打开对话框 |
+| `PlayerTag.close_dialog` | 机制 | 关闭玩家当前打开的对话框 |
+
+容器支持 `base`（标题、版式、列数、退出按钮等）、`bodies`（文本与物品展示）、`inputs`（文本 / 布尔 / 数值 / 单选四类输入项）、`buttons`（按钮及其脚本段），以及在打开时动态生成上述内容的 `procedural` 段。输入项的值在按钮脚本中通过 `<context.[输入项名]>` 或 `<context.inputs>` 读取。详见容器内的 `Dialog Script Containers`、`Dialog Inputs`、`Dialog Buttons`、`Dialog Bodies` 四份说明文档。
+
+该功能的接口与用法参照 denizen-utilities 插件设计，以便原有 `type: dialog` 脚本无需改动即可迁移。相对该插件有两处行为差异：一是 `exit button` 现在会正确地从 `base` 段读取（原实现只读取容器根部，导致退出按钮始终不生效），同时仍兼容写在根部的旧写法；二是没有 `script` 段的按钮不再绑定点击动作，点击后仅关闭对话框，这既是退出按钮应有的语义，也避免了按钮 ID 含空格时无法构造命名空间 key 的问题。
+
+对话框依赖 Paper 1.21.6 及以上版本提供的 dialog API。在更低版本或非 Paper 服务端上，相关内容不会被注册，`type: dialog` 容器将无法加载。
+
 #### 修复与调整
 
 - **`projectile launched` 事件**：`<context.shooter>` 在弹射物没有射手时（例如由发射器发射）会抛出空指针异常，现改为返回 null。

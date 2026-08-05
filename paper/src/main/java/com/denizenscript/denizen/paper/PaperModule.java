@@ -152,6 +152,15 @@ public class PaperModule {
         // Paper Tags
         new PaperTagBase();
 
+        // 对话框系统（依赖 Paper 1.21.6+ 的 dialog API，低版本上静默跳过）
+        try {
+            Class.forName("io.papermc.paper.dialog.Dialog");
+            PaperDialogModule.init();
+        }
+        catch (Throwable ex) {
+            Debug.verboseLog("Paper's dialog API is unavailable on this server version, dialog script containers will not be registered.");
+        }
+
         // Other helpers
         Bukkit.getPluginManager().registerEvents(new PaperEventHelpers(), Denizen.getInstance());
         PaperAPITools.instance = new PaperAPIToolsImpl();
