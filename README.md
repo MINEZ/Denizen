@@ -24,56 +24,26 @@ git fetch upstream
 git rebase upstream/dev
 ```
 
-#### 新增功能
+#### 新增内容
 
-**熔炼配方查询标签。** 一组 `ItemTag` 标签，用于按输入物品反查熔炼类配方：
+各项的具体用法随源码中的 meta 注释一同维护，由文档站自动生成，此处只列索引。
 
-| 标签 | 返回 | 说明 |
-| --- | --- | --- |
-| `<ItemTag.cooking_result[(<type>)]>` | ItemTag | 烧炼产物 |
-| `<ItemTag.cooking_recipe_id[(<type>)]>` | ElementTag | 配方 ID，形如 `minecraft:glass` |
-| `<ItemTag.cooking_experience[(<type>)]>` | ElementTag(Decimal) | 烧炼所得经验 |
-| `<ItemTag.cooking_time[(<type>)]>` | DurationTag | 烧炼耗时 |
+| 名称 | 类型 |
+| --- | --- |
+| `<ItemTag.cooking_result[(<type>)]>` | 标签 |
+| `<ItemTag.cooking_recipe_id[(<type>)]>` | 标签 |
+| `<ItemTag.cooking_experience[(<type>)]>` | 标签 |
+| `<ItemTag.cooking_time[(<type>)]>` | 标签 |
+| `dialog` | 脚本容器 |
+| `showdialog` | 命令 |
+| `player custom click` | 事件 |
+| `ConnectionTag` | 对象类型 |
+| `PlayerTag.show_dialog` | 机制 |
+| `PlayerTag.close_dialog` | 机制 |
 
-`type` 可取 `furnace`（默认）、`blasting`、`smoking`、`campfire`，以及不限炉子类型的 `cooking`；查不到配方时一律返回 null。
+对话框相关内容依赖 Paper 1.21.6 及以上版本提供的 dialog API。在更低版本或非 Paper 服务端上这些内容不会被注册，`type: dialog` 容器将无法加载，其余内容不受影响。
 
-上游只提供了按产物查配方的 API（`Bukkit.getRecipesFor`、`ItemTag.recipe_ids`），脚本想反过来查，只能遍历 `server.recipe_ids` 再用 `server.recipe_items` 的文本做近似匹配。而 `server.recipe_items` 对多材料输入只会暴露第一个材料——例如玻璃的输入同时包含沙子与红沙，红沙必然漏判——遍历本身也无法承受“每破坏一个方块查一次”的调用频率。本 Fork 改为在首次查询时构建一份材料到配方的索引，是否匹配则交由原版的 `RecipeChoice#test` 判断，多材料输入与精确匹配输入都能正确处理。
-
-索引会在服务器加载与 Denizen 脚本重载时失效重建。注意 `/minecraft:reload`（数据包重载）不会触发重建，此时需手动执行一次 `/denizen reload scripts`。
-
-**对话框系统。** 一套基于 Paper dialog API 的 `dialog` 脚本容器，用于构建原版客户端的 UI 对话框：
-
-```yaml
-my_dialog:
-    type: dialog
-    base:
-        type: multi
-        title: <&e>主菜单
-        columns: 1
-        exit button:
-            label: 关闭
-    buttons:
-        greet:
-            label: 打招呼
-            script:
-            - narrate 你好！
-```
-
-配套内容：
-
-| 名称 | 类型 | 说明 |
-| --- | --- | --- |
-| `showdialog [<dialog>] (def:<ListTag>)` | 命令 | 为队列关联的玩家打开对话框，可按 `definitions` 传入定义 |
-| `player custom click` | 世界事件 | 玩家点击自定义动作时触发，含 `button_id`、`namespace` 两个开关 |
-| `ConnectionTag` | 对象类型 | 代表一个玩家连接，主要用于对话框按钮的 `<context.connection>` |
-| `PlayerTag.show_dialog` | 机制 | 直接为玩家打开对话框 |
-| `PlayerTag.close_dialog` | 机制 | 关闭玩家当前打开的对话框 |
-
-容器支持 `base`（标题、版式、列数、退出按钮等）、`bodies`（文本与物品展示）、`inputs`（文本 / 布尔 / 数值 / 单选四类输入项）、`buttons`（按钮及其脚本段），以及在打开时动态生成上述内容的 `procedural` 段。输入项的值在按钮脚本中通过 `<context.[输入项名]>` 或 `<context.inputs>` 读取。详见容器内的 `Dialog Script Containers`、`Dialog Inputs`、`Dialog Buttons`、`Dialog Bodies` 四份说明文档。
-
-该功能的接口与用法参照 denizen-utilities 插件设计，以便原有 `type: dialog` 脚本无需改动即可迁移。相对该插件有两处行为差异：一是 `exit button` 现在会正确地从 `base` 段读取（原实现只读取容器根部，导致退出按钮始终不生效），同时仍兼容写在根部的旧写法；二是没有 `script` 段的按钮不再绑定点击动作，点击后仅关闭对话框，这既是退出按钮应有的语义，也避免了按钮 ID 含空格时无法构造命名空间 key 的问题。
-
-对话框依赖 Paper 1.21.6 及以上版本提供的 dialog API。在更低版本或非 Paper 服务端上，相关内容不会被注册，`type: dialog` 容器将无法加载。
+对话框的接口与用法参照 denizen-utilities 插件设计，原有 `type: dialog` 脚本无需改动即可迁移，仅有两处行为差异：`exit button` 改为从 `base` 段读取（原实现只读容器根部，导致退出按钮始终不生效），同时兼容旧写法；没有 `script` 段的按钮不再绑定点击动作，点击后仅关闭对话框。
 
 #### 修复与调整
 
