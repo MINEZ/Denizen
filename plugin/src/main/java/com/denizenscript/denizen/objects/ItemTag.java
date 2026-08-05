@@ -10,6 +10,7 @@ import com.denizenscript.denizen.scripts.containers.core.BookScriptContainer;
 import com.denizenscript.denizen.scripts.containers.core.ItemScriptContainer;
 import com.denizenscript.denizen.scripts.containers.core.ItemScriptHelper;
 import com.denizenscript.denizen.tags.BukkitTagContext;
+import com.denizenscript.denizen.utilities.CookingRecipes;
 import com.denizenscript.denizen.utilities.Utilities;
 import com.denizenscript.denizen.utilities.nbt.CustomNBT;
 import com.denizenscript.denizencore.events.ScriptEvent;
@@ -17,6 +18,7 @@ import com.denizenscript.denizencore.flags.AbstractFlagTracker;
 import com.denizenscript.denizencore.flags.FlaggableObject;
 import com.denizenscript.denizencore.flags.MapTagFlagTracker;
 import com.denizenscript.denizencore.objects.*;
+import com.denizenscript.denizencore.objects.core.DurationTag;
 import com.denizenscript.denizencore.objects.core.ElementTag;
 import com.denizenscript.denizencore.objects.core.ImageTag;
 import com.denizenscript.denizencore.objects.core.ListTag;
@@ -38,6 +40,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.CookingRecipe;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.meta.BlockStateMeta;
@@ -496,6 +499,16 @@ public class ItemTag implements ObjectTag, Adjustable, FlaggableObject {
         return !getBukkitMaterial().isAir();
     }
 
+    /** 解析熔炼类标签的类型参数并查出对应配方，类型非法或查不到时返回 null。 */
+    public static CookingRecipe<?> getCookingRecipe(Attribute attribute, ItemTag item) {
+        String type = attribute.hasParam() ? CoreUtilities.toLowerCase(attribute.getParam()) : "furnace";
+        if (!CookingRecipes.VALID_TYPES.contains(type)) {
+            attribute.echoError("Invalid cooking recipe type '" + type + "' specified.");
+            return null;
+        }
+        return CookingRecipes.getRecipe(item.getItemStack(), type);
+    }
+
     public static void register() {
 
         AbstractFlagTracker.registerFlagHandlers(tagProcessor);
@@ -718,6 +731,63 @@ public class ItemTag implements ObjectTag, Adjustable, FlaggableObject {
                 }
             }
             return list;
+        });
+
+        // <--[tag]
+        // @attribute <ItemTag.cooking_result[(<type>)]>
+        // @returns ItemTag
+        // @description
+        // Returns the item that results from cooking this item, as the server's recipe list defines it.
+        // Optionally specify a recipe type: FURNACE (default), BLASTING, SMOKING, CAMPFIRE, or COOKING to allow any of them.
+        // Returns null if no recipe on the server accepts this item as input.
+        // Unlike <@link tag server.recipe_items>, this correctly handles recipes that accept multiple different input materials
+        // (such as the vanilla glass recipe, which accepts both sand and red sand), and recipes that require an exact item match.
+        // @example
+        // # Narrates 'glass'.
+        // - narrate <item[sand].cooking_result.material.name>
+        // -->
+        tagProcessor.registerTag(ItemTag.class, "cooking_result", (attribute, object) -> {
+            CookingRecipe<?> recipe = getCookingRecipe(attribute, object);
+            return recipe == null ? null : new ItemTag(recipe.getResult());
+        });
+
+        // <--[tag]
+        // @attribute <ItemTag.cooking_recipe_id[(<type>)]>
+        // @returns ElementTag
+        // @description
+        // Returns the ID of the recipe that cooks this item, in the Namespace:Key format, for example "minecraft:glass".
+        // Optionally specify a recipe type: FURNACE (default), BLASTING, SMOKING, CAMPFIRE, or COOKING to allow any of them.
+        // Returns null if no recipe on the server accepts this item as input.
+        // -->
+        tagProcessor.registerTag(ElementTag.class, "cooking_recipe_id", (attribute, object) -> {
+            CookingRecipe<?> recipe = getCookingRecipe(attribute, object);
+            return recipe == null ? null : new ElementTag(recipe.getKey().toString());
+        });
+
+        // <--[tag]
+        // @attribute <ItemTag.cooking_experience[(<type>)]>
+        // @returns ElementTag(Decimal)
+        // @description
+        // Returns the amount of experience gained from cooking this item, as the server's recipe list defines it.
+        // Optionally specify a recipe type: FURNACE (default), BLASTING, SMOKING, CAMPFIRE, or COOKING to allow any of them.
+        // Returns null if no recipe on the server accepts this item as input.
+        // -->
+        tagProcessor.registerTag(ElementTag.class, "cooking_experience", (attribute, object) -> {
+            CookingRecipe<?> recipe = getCookingRecipe(attribute, object);
+            return recipe == null ? null : new ElementTag(recipe.getExperience());
+        });
+
+        // <--[tag]
+        // @attribute <ItemTag.cooking_time[(<type>)]>
+        // @returns DurationTag
+        // @description
+        // Returns how long this item takes to cook, as the server's recipe list defines it.
+        // Optionally specify a recipe type: FURNACE (default), BLASTING, SMOKING, CAMPFIRE, or COOKING to allow any of them.
+        // Returns null if no recipe on the server accepts this item as input.
+        // -->
+        tagProcessor.registerTag(DurationTag.class, "cooking_time", (attribute, object) -> {
+            CookingRecipe<?> recipe = getCookingRecipe(attribute, object);
+            return recipe == null ? null : new DurationTag((long) recipe.getCookingTime());
         });
 
         // <--[tag]
