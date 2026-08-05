@@ -9,7 +9,7 @@ An implementation of the Denizen Scripting Language for Spigot servers, with str
 
 ### 关于本 Fork
 
-本仓库是[官方 Denizen](https://github.com/DenizenScript/Denizen) 的 Fork，用于承载 MineZ 服务器所需的改动。除本节列出的内容外，其余部分与上游保持一致。
+本仓库是[官方 Denizen](https://github.com/DenizenScript/Denizen) 的 Fork，用于承载 MINEZ 服务器所需的改动。除本节列出的内容外，其余部分与上游保持一致。
 
 版本号沿用上游，Fork 的修订信息记录在构建号中，形如 `Denizen-1.3.3-b7286.1-DEV`：其中 `7286` 是所基于的上游构建号，末尾的 `.1` 是本 Fork 的修订号。下方的下载链接指向官方 CI，不包含本 Fork 的改动，需自行构建：
 
