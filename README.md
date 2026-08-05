@@ -37,7 +37,6 @@ git rebase upstream/dev
 | `dialog` | 脚本容器 |
 | `showdialog` | 命令 |
 | `player custom click` | 事件 |
-| `ConnectionTag` | 对象类型 |
 | `PlayerTag.show_dialog` | 机制 |
 | `PlayerTag.close_dialog` | 机制 |
 
