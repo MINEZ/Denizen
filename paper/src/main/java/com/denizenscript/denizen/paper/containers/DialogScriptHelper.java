@@ -14,24 +14,47 @@ import com.denizenscript.denizencore.objects.core.MapTag;
 import com.denizenscript.denizencore.utilities.YamlConfiguration;
 import com.denizenscript.denizencore.utilities.text.StringHolder;
 import io.papermc.paper.connection.PlayerCommonConnection;
+import io.papermc.paper.connection.PlayerGameConnection;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.UUID;
 
 /**
  * 对话框脚本容器的辅助工具。
  * <p>
  * 对话框打开时会把“这次展示用的配置”记录到 {@link #dialogDataMap} 中，
  * 因为玩家点击按钮时客户端只回传一个 key，服务端需要凭它反查按钮脚本与各输入项的类型。
- * 用 {@link WeakHashMap} 是为了让连接断开后这份数据能自然回收。
+ * 玩家退出时移除对应的数据，见 PlayerCustomClickScriptEvent 中的退出监听。
  */
 @SuppressWarnings("UnstableApiUsage")
 public class DialogScriptHelper {
 
-    public static final Map<PlayerCommonConnection, DialogData> dialogDataMap = new WeakHashMap<>();
+    /**
+     * 以玩家 UUID 而非连接对象作为键：连接对象在服务端内部可能被替换，
+     * 按其身份索引会查不到本次展示所记录的数据。
+     */
+    public static final Map<UUID, DialogData> dialogDataMap = new HashMap<>();
+
+    /** 取出连接对应的玩家 UUID，非游戏阶段的连接没有玩家，返回 null。 */
+    public static UUID keyFor(PlayerCommonConnection connection) {
+        return connection instanceof PlayerGameConnection gameConnection ? gameConnection.getPlayer().getUniqueId() : null;
+    }
+
+    public static DialogData getDialogData(PlayerCommonConnection connection) {
+        UUID key = keyFor(connection);
+        return key == null ? null : dialogDataMap.get(key);
+    }
+
+    public static void putDialogData(PlayerCommonConnection connection, DialogData data) {
+        UUID key = keyFor(connection);
+        if (key != null) {
+            dialogDataMap.put(key, data);
+        }
+    }
 
     public enum InputType {
         TEXT, SINGLE, BOOLEAN, NUMBER
