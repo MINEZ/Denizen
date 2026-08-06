@@ -11,8 +11,8 @@
 
 Check whether the problem also happens on an unmodified upstream build.
 
-- **It happens upstream too** — that is an upstream bug. Report it through [their channels](https://discord.gg/Q6pZGSR), not here, and please do not mention this fork when you do.
-- **It only happens here** — it belongs in [this repository's issue tracker](https://github.com/MINEZ/Denizen/issues).
+- **It still happens without this fork** — an upstream problem. Report it through [their channels](https://discord.gg/Q6pZGSR) as you normally would, with no mention of this fork.
+- **It does not happen without this fork** — ours. It belongs in [this repository's issue tracker](https://github.com/MINEZ/Denizen/issues), and only there.
 
 For anything specific to the features this fork adds, see the [documentation site](https://denizen-meta.minez.cc/) first.
 
