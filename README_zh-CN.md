@@ -16,9 +16,12 @@
 > [!IMPORTANT]
 > **本项目是非官方 Fork，与 DenizenScript 团队没有任何关联，亦未获得其背书或支持。**
 >
-> 请勿就本 Fork 的内容向上游仓库提交 issue、功能请求或错误报告，也不要在官方 Discord 与论坛中就此提问。与本文所列改动相关的一切，请提交至[本仓库的 issue](https://github.com/MINEZ/Denizen/issues)。
+> 请勿将与本 Fork 有关的任何内容带到上游仓库、官方 Discord 或论坛，一律提交至[本仓库的 issue](https://github.com/MINEZ/Denizen/issues)。
 >
-> 若遇到问题，请先确认在未经修改的上游构建上同样可以复现，再向上游反馈。
+> 区分方法是先在未经修改的上游构建上复现：
+>
+> - **脱离本 Fork 仍会出现** —— 属于上游的问题，照常向上游反馈，不必也不要提及本 Fork。
+> - **脱离本 Fork 便不再出现** —— 属于我们的问题，只应提交到这里。
 
 ## 关于
 
