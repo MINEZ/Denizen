@@ -98,6 +98,23 @@
                     <include>*.dsc</include>
                 </includes>
             </resource>
+            <!-- 许可证随产物一同分发，MIT 与 Apache 2.0 均要求副本中包含其条款。 -->
+            <resource>
+                <filtering>false</filtering>
+                <directory>${basedir}/..</directory>
+                <targetPath>META-INF</targetPath>
+                <includes>
+                    <include>LICENSE.txt</include>
+                </includes>
+            </resource>
+            <resource>
+                <filtering>false</filtering>
+                <directory>${basedir}/../licenses</directory>
+                <targetPath>META-INF/licenses</targetPath>
+                <includes>
+                    <include>*.txt</include>
+                </includes>
+            </resource>
         </resources>
         <plugins>
             <plugin>
