@@ -14,9 +14,9 @@
 </div>
 
 > [!IMPORTANT]
-> **本项目是非官方 Fork，与 DenizenScript 团队没有任何关联，亦未获得其背书或支持。**
+> **本项目是非官方 Fork，与 DenizenScript 团队没有关系，既未经其认可，也不由其提供支持。**
 >
-> 请勿将与本 Fork 有关的任何内容带到上游仓库、官方 Discord 或论坛，一律提交至[本仓库的 issue](https://github.com/MINEZ/Denizen/issues)。
+> 与本 Fork 有关的一切，请提交至[本仓库的 issue](https://github.com/MINEZ/Denizen/issues)，不要带到上游仓库、官方 Discord 或论坛。
 >
 > 区分方法是先在未经修改的上游构建上复现：
 >
