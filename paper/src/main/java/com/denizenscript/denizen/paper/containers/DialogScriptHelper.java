@@ -48,6 +48,12 @@ public class DialogScriptHelper {
         /** inputs / bodies / buttons 三段配置，可能来自静态定义，也可能来自 procedural 生成。 */
         public Map<String, YamlConfiguration> configurationMap;
 
+        /**
+         * 展示对话框时所在队列的定义快照。
+         * 按钮脚本在点击时才于新队列中执行，无从访问当时的队列，故在此保留一份。
+         */
+        public MapTag definitions;
+
         public Map<String, InputType> getInputs() {
             return inputs;
         }

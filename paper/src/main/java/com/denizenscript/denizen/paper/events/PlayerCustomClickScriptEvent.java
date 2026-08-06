@@ -23,6 +23,7 @@ import com.denizenscript.denizencore.scripts.ScriptEntryData;
 import com.denizenscript.denizencore.scripts.ScriptRegistry;
 import com.denizenscript.denizencore.scripts.queues.core.InstantQueue;
 import com.denizenscript.denizencore.utilities.YamlConfiguration;
+import com.denizenscript.denizencore.utilities.text.StringHolder;
 import io.papermc.paper.connection.PlayerGameConnection;
 import io.papermc.paper.dialog.DialogResponseView;
 import io.papermc.paper.event.player.PlayerCustomClickEvent;
@@ -31,6 +32,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
 import java.util.List;
+import java.util.Map;
 
 public class PlayerCustomClickScriptEvent extends ScriptEvent {
 
@@ -152,6 +154,11 @@ public class PlayerCustomClickScriptEvent extends ScriptEvent {
                 case "namespace" -> new ElementTag(event.getIdentifier().namespace());
                 default -> getResponseValue(dialogData, event.getDialogResponseView(), name);
             });
+            if (dialogData != null && dialogData.definitions != null) {
+                for (Map.Entry<StringHolder, ObjectTag> definition : dialogData.definitions.map.entrySet()) {
+                    queue.addDefinition(definition.getKey().str, definition.getValue());
+                }
+            }
             queue.start(true);
         }
     }

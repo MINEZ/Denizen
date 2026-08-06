@@ -519,6 +519,9 @@ public class DialogScriptContainer extends ScriptContainer {
             };
             baseBuilder.afterAction(afterAction);
         }
+        if (context != null && context.definitionProvider != null) {
+            dialogData.definitions = context.definitionProvider.getAllDefinitions();
+        }
         dialogDataMap.put(dialogData.connection, dialogData);
         return baseBuilder.build();
     }
