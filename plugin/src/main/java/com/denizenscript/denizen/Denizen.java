@@ -213,10 +213,12 @@ public class Denizen extends JavaPlugin {
             // Startup procedure
             Debug.log(ChatColor.LIGHT_PURPLE + "+-------------------------+");
             Debug.log(ChatColor.YELLOW + " Denizen " + ChatColor.GRAY + " scriptable minecraft");
+            Debug.log(ChatColor.RED + " unofficial MINEZ fork" + ChatColor.GRAY + " - not supported by the DenizenScript team");
             Debug.log("");
-            Debug.log(ChatColor.GRAY + "by:" + ChatColor.WHITE + " The DenizenScript team");
-            Debug.log(ChatColor.GRAY + "Chat with us at:" + ChatColor.WHITE + " https://discord.gg/Q6pZGSR");
-            Debug.log(ChatColor.GRAY + "Or learn more at:" + ChatColor.WHITE + " https://denizenscript.com");
+            Debug.log(ChatColor.GRAY + "by:" + ChatColor.WHITE + " The DenizenScript team" + ChatColor.GRAY + ", forked by" + ChatColor.WHITE + " MINEZ");
+            Debug.log(ChatColor.GRAY + "this fork:" + ChatColor.WHITE + " https://github.com/MINEZ/Denizen");
+            Debug.log(ChatColor.GRAY + "docs for this fork:" + ChatColor.WHITE + " https://denizen-meta.minez.cc");
+            Debug.log(ChatColor.GRAY + "upstream project:" + ChatColor.WHITE + " https://denizenscript.com");
             Debug.log(ChatColor.GRAY + "version: " + ChatColor.WHITE + versionTag);
             Debug.log(ChatColor.LIGHT_PURPLE + "+-------------------------+");
         }
