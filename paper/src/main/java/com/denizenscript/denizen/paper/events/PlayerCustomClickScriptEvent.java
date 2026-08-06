@@ -13,6 +13,7 @@ import com.denizenscript.denizen.paper.containers.DialogScriptContainer;
 import com.denizenscript.denizen.paper.containers.DialogScriptHelper;
 import com.denizenscript.denizen.utilities.implementation.BukkitScriptEntryData;
 import com.denizenscript.denizencore.events.ScriptEvent;
+import com.denizenscript.denizencore.utilities.debugging.Debug;
 import com.denizenscript.denizencore.objects.ObjectTag;
 import com.denizenscript.denizencore.objects.core.ElementTag;
 import com.denizenscript.denizencore.objects.core.JavaReflectedObjectTag;
@@ -127,10 +128,12 @@ public class PlayerCustomClickScriptEvent extends ScriptEvent {
             }
             DialogScriptContainer container = ScriptRegistry.getScriptContainerAs(pathInfo.scriptName(), DialogScriptContainer.class);
             if (container == null) {
+                Debug.echoError("Dialog button click refers to dialog script '" + pathInfo.scriptName() + "', which no longer exists.");
                 return;
             }
             YamlConfiguration buttonSection = getButtonSection(container, dialogData, pathInfo.buttonPath());
             if (buttonSection == null) {
+                Debug.echoError("Dialog script '" + pathInfo.scriptName() + "' has no button at '" + pathInfo.buttonPath() + "' to run for a click.");
                 return;
             }
             BukkitScriptEntryData entryData = event.getCommonConnection() instanceof PlayerGameConnection gameConnection
@@ -138,6 +141,7 @@ public class PlayerCustomClickScriptEvent extends ScriptEvent {
                     : new BukkitScriptEntryData(null, null);
             List<ScriptEntry> entries = container.getEntries(buttonSection, entryData, "script");
             if (entries == null || entries.isEmpty()) {
+                Debug.echoError("Dialog script '" + pathInfo.scriptName() + "' has a button at '" + pathInfo.buttonPath() + "' whose script section is empty or failed to load.");
                 return;
             }
             InstantQueue queue = new InstantQueue(container.getName());
@@ -201,16 +205,25 @@ public class PlayerCustomClickScriptEvent extends ScriptEvent {
         return new ButtonPathInfo(scriptName, buttonPath, lastDot >= 0 ? buttonPath.substring(lastDot + 1) : buttonPath);
     }
 
+    /**
+     * 按钮路径可能指向 procedural 段动态生成的内容，那只存在于本次展示的数据中；
+     * 也可能就是容器里写死的段落，此时无需依赖本次展示的数据即可取到。
+     */
     public static YamlConfiguration getButtonSection(DialogScriptContainer container, DialogScriptHelper.DialogData dialogData, String buttonPath) {
-        if (dialogData == null) {
-            return null;
-        }
         int firstDot = buttonPath.indexOf('.');
         if (firstDot >= 0) {
-            YamlConfiguration parentSection = dialogData.getConfigurationMap().get(buttonPath.substring(0, firstDot));
-            return parentSection == null ? null : parentSection.getConfigurationSection(buttonPath.substring(firstDot + 1));
+            if (dialogData != null) {
+                YamlConfiguration parentSection = dialogData.getConfigurationMap().get(buttonPath.substring(0, firstDot));
+                if (parentSection != null) {
+                    YamlConfiguration section = parentSection.getConfigurationSection(buttonPath.substring(firstDot + 1));
+                    if (section != null) {
+                        return section;
+                    }
+                }
+            }
+            return container.getConfigurationSection(buttonPath);
         }
-        YamlConfiguration section = dialogData.getConfigurationMap().get(buttonPath);
+        YamlConfiguration section = dialogData == null ? null : dialogData.getConfigurationMap().get(buttonPath);
         return section != null ? section : container.getConfigurationSection(buttonPath);
     }
 
