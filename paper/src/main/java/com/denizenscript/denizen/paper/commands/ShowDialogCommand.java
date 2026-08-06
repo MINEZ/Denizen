@@ -58,11 +58,11 @@ public class ShowDialogCommand extends AbstractCommand {
     //
     // @Usage
     // Use to open a simple dialog script with no definitions.
-    // - showdialog MySimpleDialog
+    // - showdialog my_simple_dialog
     //
     // @Usage
     // Use to pass definitions (like a quest ID or a reward amount) into the dialog.
-    // - showdialog QuestConfirmDialog def:quest_01|1000
+    // - showdialog quest_confirm_dialog def:quest_01|1000
     // -->
 
     public static void autoExecute(ScriptEntry scriptEntry,
