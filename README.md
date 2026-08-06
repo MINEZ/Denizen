@@ -36,23 +36,25 @@ git rebase upstream/dev
 
 Because rebasing rewrites commit hashes, pushing after a sync requires `git push origin dev --force-with-lease`.
 
-## What This Fork Adds
+## Changes from Upstream
 
 Usage documentation lives in the meta comments in the source and is published automatically at **[denizen-meta.minez.cc](https://denizen-meta.minez.cc/)**. The table below is only an index.
 
-| Name | Type |
-| --- | --- |
-| `<ItemTag.cooking_result[(<type>)]>` | Tag |
-| `<ItemTag.cooking_recipe_id[(<type>)]>` | Tag |
-| `<ItemTag.cooking_experience[(<type>)]>` | Tag |
-| `<ItemTag.cooking_time[(<type>)]>` | Tag |
-| `<&head[...]>` | Text tag |
-| `<&sprite[...]>` | Text tag |
-| `dialog` | Script container |
-| `showdialog` | Command |
-| `player custom click` | Event |
-| `PlayerTag.show_dialog` | Mechanism |
-| `PlayerTag.close_dialog` | Mechanism |
+| Name | Type | Change |
+| --- | --- | --- |
+| `<ItemTag.cooking_result[(<type>)]>` | Tag | Added |
+| `<ItemTag.cooking_recipe_id[(<type>)]>` | Tag | Added |
+| `<ItemTag.cooking_experience[(<type>)]>` | Tag | Added |
+| `<ItemTag.cooking_time[(<type>)]>` | Tag | Added |
+| `<&head[...]>` | Text tag | Added |
+| `<&sprite[...]>` | Text tag | Added |
+| `dialog` | Script container | Added |
+| `showdialog` | Command | Added |
+| `player custom click` | Event | Added |
+| `PlayerTag.show_dialog` | Mechanism | Added |
+| `PlayerTag.close_dialog` | Mechanism | Added |
+| `projectile launched` | Event | Fixed |
+| `potion effects modified` | Event | Fixed |
 
 **Cooking recipe tags.** Upstream only offers recipe lookup by result. Looking one up by input meant iterating `server.recipe_ids` and matching against the text of `server.recipe_items`, which exposes just the first material of a multi-material input — the vanilla glass recipe accepts both sand and red sand, so red sand was always missed. These tags build a material-to-recipe index on first use and let vanilla's own `RecipeChoice#test` decide matches, so multi-material and exact-match inputs both work.
 
@@ -62,7 +64,7 @@ The interface mirrors the denizen-utilities plugin so existing `type: dialog` sc
 
 **Inline images.** `<&head[...]>` and `<&sprite[...]>` emit the object text components added in 1.21.9, rendering a player face or an atlas sprite inline in chat. Denizen's text pipeline is built on the BungeeCord Chat API, which is frozen and drops this component type, so the fork carries its own component and serializer. **Requires a 1.21.9+ client** — older clients render nothing, without erroring.
 
-## Fixes
+### Fixes
 
 - **`projectile launched` event** — `<context.shooter>` threw a null pointer exception when the projectile had no shooter, such as one fired by a dispenser. It now returns null.
 - **`potion effects modified` event** — `<context.effect_type>` and the `effect` switch used Bukkit's legacy effect names such as `SLOW` and `FAST_DIGGING`. They now use the modern keys, `slowness` and `haste`, matching the rest of Denizen.
