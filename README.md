@@ -115,7 +115,7 @@ The short of it: you can do basically whatever you want, except hold any develop
 
 ### Third-Party Code
 
-The dialog subsystem is derived from [denizen-utilities](https://github.com/isnsest/denizen-utilities), Copyright (c) the denizen-utilities authors, licensed under the **Apache License, Version 2.0**. Those files remain under that license rather than MIT, carry a notice saying they have been modified, and are listed here:
+The dialog subsystem is derived from [denizen-utilities](https://github.com/isnsest/denizen-utilities), Copyright (c) isnsest, licensed under the **Apache License, Version 2.0**. Those files remain under that license rather than MIT, carry a notice saying they have been modified, and are listed here:
 
 - `paper/src/main/java/com/denizenscript/denizen/paper/PaperDialogModule.java`
 - `paper/src/main/java/com/denizenscript/denizen/paper/commands/ShowDialogCommand.java`
