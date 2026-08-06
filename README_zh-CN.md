@@ -13,6 +13,13 @@
 
 </div>
 
+> [!IMPORTANT]
+> **本项目是非官方 Fork，与 DenizenScript 团队没有任何关联，亦未获得其背书或支持。**
+>
+> 请勿就本 Fork 的内容向上游仓库提交 issue、功能请求或错误报告，也不要在官方 Discord 与论坛中就此提问。与本文所列改动相关的一切，请提交至[本仓库的 issue](https://github.com/MINEZ/Denizen/issues)。
+>
+> 若遇到问题，请先确认在未经修改的上游构建上同样可以复现，再向上游反馈。
+
 ## 关于
 
 本仓库跟随上游 `dev` 分支，仅承载 MINEZ 服务器所需的少量改动。除下文列出的内容外，其余部分与上游完全一致。
@@ -85,9 +92,9 @@ mvn clean package -DBUILD_NUMBER=<上游构建号>.<Fork 修订号> -DBUILD_CLAS
 
 ## 上游
 
-Denizen 由 [DenizenScript 团队](https://denizenscript.com/)开发。学习这门语言本身，仍应前往[新手指南](https://guide.denizenscript.com/)与官方 [Discord](https://discord.gg/Q6pZGSR)。
+Denizen 由 [DenizenScript 团队](https://denizenscript.com/)开发。学习这门语言本身，仍应前往[新手指南](https://guide.denizenscript.com/)与官方 [Discord](https://discord.gg/Q6pZGSR)——但仅限于上游原本提供的内容，不包括本 Fork 的任何改动。
 
-此处的改动是为单一服务器的需求而作，默认不会提交给上游。任何具有普遍价值的内容都应当回流上游，而不是留在这个 Fork 里。
+此处的改动为单一服务器的需求而作，独立维护。请勿将相关讨论带入上游的各个渠道。
 
 ## 许可证
 
