@@ -1,18 +1,25 @@
 ---
 name: Bug Report
-about: Describe an issue with Denizen not working as expected. DO NOT POST HERE UNLESS SOMEONE TOLD YOU TO ON DISCORD.
-
+about: Something in this fork does not work as expected
 ---
 
 <!--
-IMPORTANT: Support is on Discord @ https://discord.gg/Q6pZGSR
-You should only post on GitHub if you've been directed here from the Discord.
+This tracker is for the MINEZ fork of Denizen only.
 
-Please fill in the asterisks sections below.
-Use https://paste.denizenscript.com/ to pastebin any scripts.
- -->
-The output of `/version` on my server is: **paste here**
-The output of `/version denizen` on my server is: **paste here**
-(If relevant) A link to a paste of a script demonstrating the issue: **paste here**
-The issue is:
-**Describe your issue in full here**
+Please first confirm the problem does NOT happen on an unmodified upstream build.
+If it happens upstream too, report it to upstream instead — not here.
+-->
+
+**Output of `/version`:**
+
+**Output of `/version denizen`:** (should show a `-DEV` build number, such as `1.3.3-SNAPSHOT (build 7299.4-DEV)`)
+
+**Does it also happen on an unmodified upstream build?**
+
+**Relevant script, if any:**
+
+```
+paste here
+```
+
+**What happens, and what you expected instead:**

@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Documentation for this fork
+    url: https://denizen-meta.minez.cc/
+    about: Tags, commands, events and script containers, including everything this fork adds.
+  - name: Question about Denizen itself
+    url: https://discord.gg/Q6pZGSR
+    about: For the upstream project. Please do not mention this fork there.
