@@ -180,6 +180,7 @@ public class HoverFormatHelper {
         Gson fixedGson = bungeeGson.newBuilder()
                 .registerTypeAdapter(FixedItemHover.class, new FixedItemHoverSerializer())
                 .registerTypeAdapter(Item.class, new FixedItemHoverSerializer())
+                .registerTypeAdapter(ObjectTextComponent.class, new ObjectTextComponent.Serializer(VersionedComponentSerializer.forVersion(ChatVersion.V1_21_5)))
                 .create();
         try {
             if (NMSHandler.getVersion().isAtLeast(NMSVersion.v1_21)) {
