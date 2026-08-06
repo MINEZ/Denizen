@@ -59,7 +59,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static com.denizenscript.denizen.paper.containers.DialogScriptHelper.dialogDataMap;
+import static com.denizenscript.denizen.paper.containers.DialogScriptHelper.putDialogData;
 import static com.denizenscript.denizen.paper.containers.DialogScriptHelper.mapToConfig;
 
 @SuppressWarnings("UnstableApiUsage")
@@ -522,7 +522,7 @@ public class DialogScriptContainer extends ScriptContainer {
         if (context != null && context.definitionProvider != null) {
             dialogData.definitions = context.definitionProvider.getAllDefinitions();
         }
-        dialogDataMap.put(dialogData.connection, dialogData);
+        putDialogData(dialogData.connection, dialogData);
         return baseBuilder.build();
     }
 
