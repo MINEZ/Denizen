@@ -52,6 +52,8 @@ public class ShowDialogCommand extends AbstractCommand {
     //
     // Optionally specify a list of definitions to pass in, named by the container's 'definitions' key,
     // in the same way <@link command run> passes definitions to a task script.
+    // These, along with any other definitions in the queue at the time, remain available to the scripts
+    // attached to the dialog's buttons, which run later, when the button is clicked.
     //
     // @Tags
     // None
