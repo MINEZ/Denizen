@@ -1,0 +1,96 @@
+<div align="center">
+
+# MINEZ Denizen
+
+面向 MINEZ 服务器维护的 [Denizen](https://github.com/DenizenScript/Denizen) Fork。
+
+[English](README.md) | [简体中文](README_zh-CN.md)
+
+[![Upstream](https://img.shields.io/badge/upstream-Denizen%201.3.3-1976d2)](https://github.com/DenizenScript/Denizen)
+[![Minecraft](https://img.shields.io/badge/Minecraft-1.17.1%20~%2026.2-4caf50)](https://papermc.io/)
+[![License](https://img.shields.io/badge/license-MIT-9e9e9e)](LICENSE.txt)
+[![Docs](https://img.shields.io/badge/docs-denizen--meta.minez.cc-673ab7)](https://denizen-meta.minez.cc/)
+
+</div>
+
+## 关于
+
+本仓库跟随上游 `dev` 分支，仅承载 MINEZ 服务器所需的少量改动。除下文列出的内容外，其余部分与上游完全一致。
+
+我们的提交以变基方式跟随上游，历史保持线性：
+
+```bash
+git fetch upstream
+git rebase upstream/dev
+```
+
+变基会重写提交哈希，因此同步后推送需要 `git push origin dev --force-with-lease`。
+
+## 新增内容
+
+各项的具体用法随源码中的 meta 注释一同维护，并自动发布到 **[denizen-meta.minez.cc](https://denizen-meta.minez.cc/)**。下表仅为索引。
+
+| 名称 | 类型 |
+| --- | --- |
+| `<ItemTag.cooking_result[(<type>)]>` | 标签 |
+| `<ItemTag.cooking_recipe_id[(<type>)]>` | 标签 |
+| `<ItemTag.cooking_experience[(<type>)]>` | 标签 |
+| `<ItemTag.cooking_time[(<type>)]>` | 标签 |
+| `<&head[...]>` | 文本标签 |
+| `<&sprite[...]>` | 文本标签 |
+| `dialog` | 脚本容器 |
+| `showdialog` | 命令 |
+| `player custom click` | 事件 |
+| `PlayerTag.show_dialog` | 机制 |
+| `PlayerTag.close_dialog` | 机制 |
+
+**熔炼配方标签。** 上游只提供了按产物查找配方的能力。想按输入反查，只能遍历 `server.recipe_ids` 再用 `server.recipe_items` 的文本做匹配，而后者对多材料输入只会暴露第一个材料——原版玻璃配方同时接受沙子与红沙，红沙因此必然漏判。这组标签在首次查询时构建材料到配方的索引，是否匹配交由原版的 `RecipeChoice#test` 判断，多材料输入与精确匹配输入都能正确处理。
+
+**对话框。** 基于 Paper dialog API 的 `dialog` 脚本容器，支持 `confirm`、`notice`、`list`、`multi` 四种版式，以及 `base`、`bodies`、`inputs`、`buttons` 与用于动态生成内容的 `procedural` 段。依赖 Paper 1.21.6 及以上版本；在更低版本或非 Paper 服务端上这些内容不会被注册，`type: dialog` 容器将无法加载，其余内容不受影响。
+
+接口与 denizen-utilities 插件保持一致，原有 `type: dialog` 脚本无需改动即可迁移，仅有两处刻意的差异：`exit button` 改为从 `base` 段读取（原实现只读容器根部，导致退出按钮始终不生效），同时兼容旧写法；没有 `script` 段的按钮不再绑定点击动作，点击后仅关闭对话框。
+
+**内联图像。** `<&head[...]>` 与 `<&sprite[...]>` 输出 1.21.9 引入的 object 类型文本组件，可在聊天中内联渲染玩家头像或图集精灵。Denizen 的文本管线建立在已被冻结的 BungeeCord Chat API 之上，会丢弃这一类型的组件，因此本 Fork 自带了对应的组件与序列化器。**需要 1.21.9 及以上的客户端**，低版本客户端不会显示，但也不会报错。
+
+## 修复
+
+- **`projectile launched` 事件** —— `<context.shooter>` 在弹射物没有射手时（例如由发射器发射）会抛出空指针异常，现改为返回 null。
+- **`potion effects modified` 事件** —— `<context.effect_type>` 与 `effect` 开关此前使用 Bukkit 的旧式效果名（如 `SLOW`、`FAST_DIGGING`），现改用现代的键名（`slowness`、`haste`），与 Denizen 其余部分保持一致。
+
+## 构建
+
+需要 JDK 17 及以上版本，并通过 [BuildTools](https://www.spigotmc.org/wiki/buildtools/) 构建全部所列的 Spigot 版本。
+
+```bash
+mvn clean package -DBUILD_NUMBER=<上游构建号>.<Fork 修订号> -DBUILD_CLASS=DEV
+```
+
+产物位于 `target/`，形如 `Denizen-1.3.3-b7299.4-DEV.jar`。
+
+## 版本号
+
+项目版本号沿用上游，不作改动。Fork 的修订信息记录在构建号中：在 `Denizen-1.3.3-b7299.4-DEV` 中，`7299` 是所基于的上游构建号，末尾的 `.4` 是本 Fork 的修订号。这样既不会与上游的版本号撞车，合并上游时也不会在 `pom.xml` 上产生冲突。
+
+上游项目页面上的下载链接指向官方 CI，**不包含**本 Fork 的改动。
+
+## 相关仓库
+
+| 仓库 | 用途 |
+| --- | --- |
+| [MINEZ/DenizenCore](https://github.com/MINEZ/DenizenCore) | 核心库，无改动镜像 |
+| [MINEZ/Depenizen](https://github.com/MINEZ/Depenizen) | 插件桥接，无改动镜像 |
+| [MINEZ/SharpDenizenTools](https://github.com/MINEZ/SharpDenizenTools) | meta 解析与脚本检查的共用库 |
+| [MINEZ/DenizenMetaWebsite](https://github.com/MINEZ/DenizenMetaWebsite) | 文档站，部署于 [denizen-meta.minez.cc](https://denizen-meta.minez.cc/) |
+| [MINEZ/DenizenVSCode](https://github.com/MINEZ/DenizenVSCode) | VS Code 扩展，构建时对接本 Fork 的 meta |
+
+## 上游
+
+Denizen 由 [DenizenScript 团队](https://denizenscript.com/)开发。学习这门语言本身，仍应前往[新手指南](https://guide.denizenscript.com/)与官方 [Discord](https://discord.gg/Q6pZGSR)。
+
+此处的改动是为单一服务器的需求而作，默认不会提交给上游。任何具有普遍价值的内容都应当回流上游，而不是留在这个 Fork 里。
+
+## 许可证
+
+Denizen 以 MIT 许可证开源，版权归 The Denizen Script Team 所有。本 Fork 的修改同样适用该许可证。完整条款见 [LICENSE.txt](LICENSE.txt)。
+
+简而言之：你几乎可以做任何事，但不得就你使用本软件所造成的后果追究任何开发者的责任。
