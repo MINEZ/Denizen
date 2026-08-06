@@ -230,6 +230,55 @@ public class TextTagBase {
         });
 
         // <--[tag]
+        // @attribute <&head[(name=<name>)/(uuid=<uuid>)/(texture=<texture>);(hat=<true/false>)]>
+        // @returns ElementTag
+        // @description
+        // Returns a special chat code that displays a player's face as an inline 8x8 sprite.
+        // Specify exactly one of 'name' (a player name), 'uuid' (a player UUID), or 'texture' (a texture key, like 'entity/player/wide/steve').
+        // Optionally specify 'hat' as false to hide the outer skin layer, defaults to true.
+        // Requires a 1.21.9+ client. Note that this is a magic Denizen tool - refer to <@link language Denizen Text Formatting>.
+        // @example
+        // # Narrates the player's own face followed by their name.
+        // - narrate "<&head[uuid=<player.uuid>]> <player.name>"
+        // -->
+        TagManager.registerStaticTagBaseHandler(ElementTag.class, MapTag.class, "&head", (attribute, param) -> {
+            ElementTag name = param.getElement("name"), uuid = param.getElement("uuid"), texture = param.getElement("texture");
+            int sourceCount = (name == null ? 0 : 1) + (uuid == null ? 0 : 1) + (texture == null ? 0 : 1);
+            if (sourceCount != 1) {
+                attribute.echoError("Invalid '&head' input: specify exactly one of 'name', 'uuid', or 'texture'.");
+                return null;
+            }
+            String sourceType = name != null ? "name" : uuid != null ? "id" : "texture";
+            ElementTag sourceValue = name != null ? name : uuid != null ? uuid : texture;
+            ElementTag hat = param.getElement("hat");
+            return new ElementTag(ChatColor.COLOR_CHAR + "[head=" + sourceType
+                    + ";" + FormattedTextHelper.escape(sourceValue.asString())
+                    + ";" + (hat == null || hat.asBoolean()) + "]", true);
+        });
+
+        // <--[tag]
+        // @attribute <&sprite[sprite=<sprite>;(atlas=<atlas>)]>
+        // @returns ElementTag
+        // @description
+        // Returns a special chat code that displays a sprite from a texture atlas as an inline 8x8 image.
+        // Optionally specify the atlas to read from, defaults to 'minecraft:blocks'.
+        // Requires a 1.21.9+ client. Note that this is a magic Denizen tool - refer to <@link language Denizen Text Formatting>.
+        // @example
+        // # Narrates a porkchop icon followed by a price.
+        // - narrate "<&sprite[sprite=item/porkchop;atlas=minecraft:items]> 10"
+        // -->
+        TagManager.registerStaticTagBaseHandler(ElementTag.class, MapTag.class, "&sprite", (attribute, param) -> {
+            ElementTag sprite = param.getElement("sprite");
+            if (sprite == null) {
+                attribute.echoError("Invalid '&sprite' input: missing required 'sprite' key.");
+                return null;
+            }
+            ElementTag atlas = param.getElement("atlas");
+            return new ElementTag(ChatColor.COLOR_CHAR + "[sprite=" + (atlas == null ? "" : FormattedTextHelper.escape(atlas.asString()))
+                    + ";" + FormattedTextHelper.escape(sprite.asString()) + "]", true);
+        });
+
+        // <--[tag]
         // @attribute <&score[<name>|<objective>(|<value>)]>
         // @returns ElementTag
         // @description

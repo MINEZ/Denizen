@@ -194,6 +194,19 @@ public class FormattedTextHelper {
         else if (component instanceof KeybindComponent) {
             builder.append(ChatColor.COLOR_CHAR).append("[keybind=").append(escape(((KeybindComponent) component).getKeybind())).append("]");
         }
+        else if (component instanceof ObjectTextComponent objectComponent) {
+            if (objectComponent.isPlayerHead) {
+                builder.append(ChatColor.COLOR_CHAR).append("[head=")
+                        .append(objectComponent.playerSource == null ? "name" : CoreUtilities.toLowerCase(objectComponent.playerSource.name()))
+                        .append(";").append(escape(objectComponent.playerValue == null ? "" : objectComponent.playerValue))
+                        .append(";").append(objectComponent.hat).append("]");
+            }
+            else {
+                builder.append(ChatColor.COLOR_CHAR).append("[sprite=")
+                        .append(escape(objectComponent.atlas == null ? "" : objectComponent.atlas))
+                        .append(";").append(escape(objectComponent.sprite == null ? "" : objectComponent.sprite)).append("]");
+            }
+        }
         else if (component instanceof ScoreComponent) {
             builder.append(ChatColor.COLOR_CHAR).append("[score=").append(escape(((ScoreComponent) component).getName()))
                     .append(";").append(escape(((ScoreComponent) component).getObjective()))
@@ -567,6 +580,21 @@ public class FormattedTextHelper {
                         else if (innardType.equals("keybind") && Utilities.matchesNamespacedKeyButCaseInsensitive(innardBase.get(1))) {
                             KeybindComponent component = new KeybindComponent();
                             component.setKeybind(unescape(innardBase.get(1)));
+                            lastText.addExtra(component);
+                        }
+                        else if (innardType.equals("sprite") && innardParts.size() == 1) {
+                            ObjectTextComponent component = new ObjectTextComponent();
+                            String atlasText = unescape(innardBase.get(1));
+                            component.atlas = atlasText.isEmpty() ? null : atlasText;
+                            component.sprite = unescape(innardParts.get(0));
+                            lastText.addExtra(component);
+                        }
+                        else if (innardType.equals("head") && innardParts.size() == 2) {
+                            ObjectTextComponent component = new ObjectTextComponent();
+                            component.isPlayerHead = true;
+                            component.playerSource = ElementTag.asEnum(ObjectTextComponent.PlayerSource.class, innardBase.get(1));
+                            component.playerValue = unescape(innardParts.get(0));
+                            component.hat = !CoreUtilities.equalsIgnoreCase(innardParts.get(1), "false");
                             lastText.addExtra(component);
                         }
                         else if (innardType.equals("selector")) {
