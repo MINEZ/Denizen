@@ -3,9 +3,9 @@
 [English](CONTRIBUTING.md) | [简体中文](CONTRIBUTING_zh-CN.md)
 
 > [!IMPORTANT]
-> 本项目是 [Denizen](https://github.com/DenizenScript/Denizen) 的非官方 Fork，为 MINEZ 服务器而维护，与 DenizenScript 团队没有任何关联，亦未获得其背书或支持。
+> 本项目是 [Denizen](https://github.com/DenizenScript/Denizen) 的非官方 Fork，为 MINEZ 服务器而维护，与 DenizenScript 团队没有关系，既未经其认可，也不由其提供支持。
 >
-> 请勿将与本 Fork 有关的任何内容带到上游的 issue、Discord 或论坛。
+> 与本 Fork 有关的一切，都不要带到上游的 issue、Discord 或论坛。
 
 ## 提交 issue 之前
 
