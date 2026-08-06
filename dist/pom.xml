@@ -171,6 +171,11 @@
                                     <includes>
                                         <include>**</include>
                                     </includes>
+                                    <!-- BinaryTagHolder 属于 Paper 对外暴露的 API 类型，
+                                         须使用服务端提供的那一份，不能随本插件重复打包。 -->
+                                    <excludes>
+                                        <exclude>net/kyori/adventure/nbt/api/**</exclude>
+                                    </excludes>
                                 </filter>
                             </filters>
                             <relocations>
@@ -201,6 +206,9 @@
                                 <relocation>
                                     <pattern>net.kyori.adventure.nbt</pattern>
                                     <shadedPattern>com.denizenscript.shaded.net.adventure.nbt</shadedPattern>
+                                    <excludes>
+                                        <exclude>net.kyori.adventure.nbt.api.**</exclude>
+                                    </excludes>
                                 </relocation>
                             </relocations>
                         </configuration>
