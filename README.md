@@ -4,7 +4,7 @@
 
 A fork of [Denizen](https://github.com/DenizenScript/Denizen) maintained for the MINEZ server.
 
-[English](README.md) | [简体中文](README_zh-CN.md)
+[English](README.md) | [简体中文](docs/README_zh-CN.md)
 
 [![Upstream](https://img.shields.io/badge/upstream-Denizen%201.3.3-1976d2)](https://github.com/DenizenScript/Denizen)
 [![Minecraft](https://img.shields.io/badge/Minecraft-7%20versions-4caf50)](#supported-versions)
