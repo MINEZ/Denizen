@@ -13,6 +13,13 @@ A fork of [Denizen](https://github.com/DenizenScript/Denizen) maintained for the
 
 </div>
 
+> [!IMPORTANT]
+> **This is an unofficial fork and is not affiliated with, endorsed by, or supported by the DenizenScript team.**
+>
+> Please do not open issues, feature requests, bug reports, or support questions about this fork on the upstream repository, and do not ask about it in the official Discord or forums. Anything related to the changes listed here belongs in [this repository's issue tracker](https://github.com/MINEZ/Denizen/issues).
+>
+> If you hit a problem, please confirm it also occurs on an unmodified upstream build before reporting it upstream.
+
 ## About
 
 This repository tracks the upstream `dev` branch and adds a small set of changes needed by the MINEZ server. Everything not listed below is identical to upstream.
@@ -85,9 +92,9 @@ The download links on the upstream project point at the official CI and do **not
 
 ## Upstream
 
-Denizen is developed by [the DenizenScript team](https://denizenscript.com/). For learning the language itself, the [beginner's guide](https://guide.denizenscript.com/) and the [Discord](https://discord.gg/Q6pZGSR) remain the right places to go.
+Denizen is developed by [the DenizenScript team](https://denizenscript.com/). For learning the language itself, the [beginner's guide](https://guide.denizenscript.com/) and the [Discord](https://discord.gg/Q6pZGSR) remain the right places to go — for the language as upstream ships it, not for anything in this fork.
 
-Changes here are made for one server's needs and are not filed upstream by default. Anything of general value should be contributed back rather than kept in this fork.
+The changes here are built for one server's needs and are maintained separately. Please keep discussion of them out of upstream's channels.
 
 ## License
 
