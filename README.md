@@ -1,141 +1,96 @@
-The Denizen Scripting Language - Spigot Impl
---------------------------------------------
+<div align="center">
 
-An implementation of the Denizen Scripting Language for Spigot servers, with strong Citizens interlinks to emphasize the power of using Denizen with NPCs!
+# MINEZ Denizen
 
-**Version 1.3.3**: Compatible with Spigot 1.17.1, 1.18.2, 1.19.4, 1.20.6, 1.21.11, 26.1.2, and 26.2!
+A fork of [Denizen](https://github.com/DenizenScript/Denizen) maintained for the MINEZ server.
 
-**Learn about Denizen from the Beginner's guide:** https://guide.denizenscript.com/guides/background/index.html
+[English](README.md) | [简体中文](README_zh-CN.md)
 
-### 关于本 Fork
+[![Upstream](https://img.shields.io/badge/upstream-Denizen%201.3.3-1976d2)](https://github.com/DenizenScript/Denizen)
+[![Minecraft](https://img.shields.io/badge/Minecraft-1.17.1%20~%2026.2-4caf50)](https://papermc.io/)
+[![License](https://img.shields.io/badge/license-MIT-9e9e9e)](LICENSE.txt)
+[![Docs](https://img.shields.io/badge/docs-denizen--meta.minez.cc-673ab7)](https://denizen-meta.minez.cc/)
 
-本仓库是[官方 Denizen](https://github.com/DenizenScript/Denizen) 的 Fork，用于承载 MINEZ 服务器所需的改动。除本节列出的内容外，其余部分与上游保持一致。
+</div>
 
-版本号沿用上游，Fork 的修订信息记录在构建号中，形如 `Denizen-1.3.3-b7286.1-DEV`：其中 `7286` 是所基于的上游构建号，末尾的 `.1` 是本 Fork 的修订号。下方的下载链接指向官方 CI，不包含本 Fork 的改动，需自行构建：
+## About
 
-```
-mvn clean package -DBUILD_NUMBER=<上游构建号>.<Fork 修订号> -DBUILD_CLASS=DEV
-```
+This repository tracks the upstream `dev` branch and adds a small set of changes needed by the MINEZ server. Everything not listed below is identical to upstream.
 
-本 Fork 的提交以变基方式跟随上游 `dev` 分支，历史保持线性：
+Our commits follow upstream by rebase, so the history stays linear:
 
-```
+```bash
 git fetch upstream
 git rebase upstream/dev
 ```
 
-#### 新增内容
+Because rebasing rewrites commit hashes, pushing after a sync requires `git push origin dev --force-with-lease`.
 
-各项的具体用法随源码中的 meta 注释一同维护，由文档站自动生成，此处只列索引。
+## What This Fork Adds
 
-| 名称 | 类型 |
+Usage documentation lives in the meta comments in the source and is published automatically at **[denizen-meta.minez.cc](https://denizen-meta.minez.cc/)**. The table below is only an index.
+
+| Name | Type |
 | --- | --- |
-| `<ItemTag.cooking_result[(<type>)]>` | 标签 |
-| `<ItemTag.cooking_recipe_id[(<type>)]>` | 标签 |
-| `<ItemTag.cooking_experience[(<type>)]>` | 标签 |
-| `<ItemTag.cooking_time[(<type>)]>` | 标签 |
-| `dialog` | 脚本容器 |
-| `showdialog` | 命令 |
-| `player custom click` | 事件 |
-| `PlayerTag.show_dialog` | 机制 |
-| `PlayerTag.close_dialog` | 机制 |
+| `<ItemTag.cooking_result[(<type>)]>` | Tag |
+| `<ItemTag.cooking_recipe_id[(<type>)]>` | Tag |
+| `<ItemTag.cooking_experience[(<type>)]>` | Tag |
+| `<ItemTag.cooking_time[(<type>)]>` | Tag |
+| `<&head[...]>` | Text tag |
+| `<&sprite[...]>` | Text tag |
+| `dialog` | Script container |
+| `showdialog` | Command |
+| `player custom click` | Event |
+| `PlayerTag.show_dialog` | Mechanism |
+| `PlayerTag.close_dialog` | Mechanism |
 
-对话框相关内容依赖 Paper 1.21.6 及以上版本提供的 dialog API。在更低版本或非 Paper 服务端上这些内容不会被注册，`type: dialog` 容器将无法加载，其余内容不受影响。
+**Cooking recipe tags.** Upstream only offers recipe lookup by result. Looking one up by input meant iterating `server.recipe_ids` and matching against the text of `server.recipe_items`, which exposes just the first material of a multi-material input — the vanilla glass recipe accepts both sand and red sand, so red sand was always missed. These tags build a material-to-recipe index on first use and let vanilla's own `RecipeChoice#test` decide matches, so multi-material and exact-match inputs both work.
 
-对话框的接口与用法参照 denizen-utilities 插件设计，原有 `type: dialog` 脚本无需改动即可迁移，仅有两处行为差异：`exit button` 改为从 `base` 段读取（原实现只读容器根部，导致退出按钮始终不生效），同时兼容旧写法；没有 `script` 段的按钮不再绑定点击动作，点击后仅关闭对话框。
+**Dialogs.** A `dialog` script container backed by Paper's dialog API, covering the `confirm`, `notice`, `list` and `multi` layouts, along with `base`, `bodies`, `inputs`, `buttons` and a `procedural` section for building content dynamically. Requires Paper 1.21.6 or newer; on older or non-Paper servers these are not registered and `type: dialog` containers will fail to load, while everything else is unaffected.
 
-#### 修复与调整
+The interface mirrors the denizen-utilities plugin so existing `type: dialog` scripts migrate unchanged, with two deliberate differences: `exit button` is now read from the `base` section (the original only read the container root, so exit buttons never took effect), with the old placement still accepted; and a button with no `script` section no longer binds a click action, so clicking it simply closes the dialog.
 
-- **`projectile launched` 事件**：`<context.shooter>` 在弹射物没有射手时（例如由发射器发射）会抛出空指针异常，现改为返回 null。
-- **`potion effects modified` 事件**：`<context.effect_type>` 与 `effect` 开关此前使用 Bukkit 的旧式效果名（如 `SLOW`、`FAST_DIGGING`），现改用现代的键名（如 `slowness`、`haste`），与 Denizen 其余部分的命名保持一致。
+**Inline images.** `<&head[...]>` and `<&sprite[...]>` emit the object text components added in 1.21.9, rendering a player face or an atlas sprite inline in chat. Denizen's text pipeline is built on the BungeeCord Chat API, which is frozen and drops this component type, so the fork carries its own component and serializer. **Requires a 1.21.9+ client** — older clients render nothing, without erroring.
 
-#### Download Links:
+## Fixes
 
-- **Release builds**: https://ci.citizensnpcs.co/job/Denizen/
-- **Developmental builds**: https://ci.citizensnpcs.co/job/Denizen_Developmental/
-- **SpigotMC - VERY SLOW releases**: https://www.spigotmc.org/resources/denizen.21039/
+- **`projectile launched` event** — `<context.shooter>` threw a null pointer exception when the projectile had no shooter, such as one fired by a dispenser. It now returns null.
+- **`potion effects modified` event** — `<context.effect_type>` and the `effect` switch used Bukkit's legacy effect names such as `SLOW` and `FAST_DIGGING`. They now use the modern keys, `slowness` and `haste`, matching the rest of Denizen.
 
-#### Need help using Denizen? Try one of these places:
+## Building
 
-- **Discord** - chat room (Modern, strongly recommended): https://discord.gg/Q6pZGSR
-- **Denizen Home Page** - a link directory (Modern): https://denizenscript.com/
-- **Forum and script sharing** (Modern): https://forum.denizenscript.com/
-- **Meta Documentation** - command/tag/event/etc. search (Modern): https://meta.denizenscript.com/
-- **Beginner's Guide** - text form (Modern): https://guide.denizenscript.com/
+Requires JDK 17+ and all listed Spigot versions installed via [BuildTools](https://www.spigotmc.org/wiki/buildtools/).
 
-#### Also check out:
-
-- **Citizens2 (NPC support)**: https://github.com/CitizensDev/Citizens2/
-- **Depenizen (Other plugin support)**: https://github.com/DenizenScript/Depenizen
-- **dDiscordBot (Adds a Discord bot to Denizen)**: https://github.com/DenizenScript/dDiscordBot
-- **DenizenCore (Our core, needed for building)**: https://github.com/DenizenScript/Denizen-Core
-- **DenizenVSCode (extension for writing Denizen scripts in VS Code)**: https://github.com/DenizenScript/DenizenVSCode
-
-### Building
-
-- Built against JDK 17, using maven `pom.xml` as project file.
-- Requires building all listed versions of Spigot via Spigot BuildTools: https://www.spigotmc.org/wiki/buildtools/
-
-### Maven
-
-```xml
-    <repository>
-        <id>citizens-repo</id>
-        <url>https://maven.citizensnpcs.co/repo</url>
-    </repository>
-    <dependencies>
-        <dependency>
-            <groupId>com.denizenscript</groupId>
-            <artifactId>denizen</artifactId>
-            <version>1.3.3-SNAPSHOT</version>
-            <type>jar</type>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-    </dependencies>
+```bash
+mvn clean package -DBUILD_NUMBER=<upstream build>.<fork revision> -DBUILD_CLASS=DEV
 ```
 
-### Licensing pre-note:
+The result lands in `target/`, for example `Denizen-1.3.3-b7299.4-DEV.jar`.
 
-This is an open source project, provided entirely freely, for everyone to use and contribute to.
+## Versioning
 
-If you make any changes that could benefit the community as a whole, please contribute upstream.
+The project version follows upstream unchanged. Fork revisions are recorded in the build number instead: in `Denizen-1.3.3-b7299.4-DEV`, `7299` is the upstream build this is based on and the trailing `.4` is the fork revision. This keeps our version numbers from colliding with upstream releases and avoids conflicts in `pom.xml` when merging.
 
-### The short of the license is:
+The download links on the upstream project point at the official CI and do **not** include these changes.
 
-You can do basically whatever you want, except you may not hold any developer liable for what you do with the software.
+## Related Repositories
 
-### Previous License
+| Repository | Purpose |
+| --- | --- |
+| [MINEZ/DenizenCore](https://github.com/MINEZ/DenizenCore) | Core, mirrored without changes |
+| [MINEZ/Depenizen](https://github.com/MINEZ/Depenizen) | Plugin bridges, mirrored without changes |
+| [MINEZ/SharpDenizenTools](https://github.com/MINEZ/SharpDenizenTools) | Shared meta and script-checking library |
+| [MINEZ/DenizenMetaWebsite](https://github.com/MINEZ/DenizenMetaWebsite) | Documentation site, deployed at [denizen-meta.minez.cc](https://denizen-meta.minez.cc/) |
+| [MINEZ/DenizenVSCode](https://github.com/MINEZ/DenizenVSCode) | VS Code extension, built against this fork's meta |
 
-Copyright (C) 2012-2013 Aufdemrand, All Rights Reserved.
+## Upstream
 
-Copyright (C) 2013-2019 The Denizen Script Team, All Rights Reserved.
+Denizen is developed by [the DenizenScript team](https://denizenscript.com/). For learning the language itself, the [beginner's guide](https://guide.denizenscript.com/) and the [Discord](https://discord.gg/Q6pZGSR) remain the right places to go.
 
-### The long version of the license follows:
+Changes here are made for one server's needs and are not filed upstream by default. Anything of general value should be contributed back rather than kept in this fork.
 
-The MIT License (MIT)
+## License
 
-Copyright (c) 2019-2026 The Denizen Script Team
+Denizen is open source under the MIT License, Copyright (c) The Denizen Script Team. Modifications in this fork are provided under the same terms. See [LICENSE.txt](LICENSE.txt) for the full text.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+The short of it: you can do basically whatever you want, except hold any developer liable for what you do with the software.
