@@ -11,8 +11,8 @@
 
 请先确认该问题在未经修改的上游构建上是否同样出现。
 
-- **上游同样出现** —— 那是上游的问题，请通过[他们的渠道](https://discord.gg/Q6pZGSR)反馈，而不是这里；反馈时也请不要提及本 Fork。
-- **只在这里出现** —— 请提交至[本仓库的 issue](https://github.com/MINEZ/Denizen/issues)。
+- **脱离本 Fork 仍会出现** —— 属于上游的问题，请照常通过[他们的渠道](https://discord.gg/Q6pZGSR)反馈，不必也不要提及本 Fork。
+- **脱离本 Fork 便不再出现** —— 属于我们的问题，只应提交至[本仓库的 issue](https://github.com/MINEZ/Denizen/issues)。
 
 若问题与本 Fork 新增的功能有关，请先查阅[文档站](https://denizen-meta.minez.cc/)。
 

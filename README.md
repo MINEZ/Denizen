@@ -16,9 +16,12 @@ A fork of [Denizen](https://github.com/DenizenScript/Denizen) maintained for the
 > [!IMPORTANT]
 > **This is an unofficial fork and is not affiliated with, endorsed by, or supported by the DenizenScript team.**
 >
-> Please do not open issues, feature requests, bug reports, or support questions about this fork on the upstream repository, and do not ask about it in the official Discord or forums. Anything related to the changes listed here belongs in [this repository's issue tracker](https://github.com/MINEZ/Denizen/issues).
+> Never take anything about this fork to the upstream repository, the official Discord, or the forums. Use [this repository's issue tracker](https://github.com/MINEZ/Denizen/issues) instead.
 >
-> If you hit a problem, please confirm it also occurs on an unmodified upstream build before reporting it upstream.
+> To tell the two apart, reproduce the problem on an unmodified upstream build first:
+>
+> - **It still happens without this fork** — an upstream problem. Report it upstream as you normally would, with no mention of this fork.
+> - **It does not happen without this fork** — ours. It belongs here, and only here.
 
 ## About
 
