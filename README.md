@@ -7,7 +7,7 @@ A fork of [Denizen](https://github.com/DenizenScript/Denizen) maintained for the
 [English](README.md) | [简体中文](README_zh-CN.md)
 
 [![Upstream](https://img.shields.io/badge/upstream-Denizen%201.3.3-1976d2)](https://github.com/DenizenScript/Denizen)
-[![Minecraft](https://img.shields.io/badge/Minecraft-1.17.1%20~%2026.2-4caf50)](https://papermc.io/)
+[![Minecraft](https://img.shields.io/badge/Minecraft-7%20versions-4caf50)](#supported-versions)
 [![License](https://img.shields.io/badge/license-MIT-9e9e9e)](LICENSE.txt)
 [![Docs](https://img.shields.io/badge/docs-denizen--meta.minez.cc-673ab7)](https://denizen-meta.minez.cc/)
 
@@ -26,6 +26,12 @@ A fork of [Denizen](https://github.com/DenizenScript/Denizen) maintained for the
 ## About
 
 This repository tracks the upstream `dev` branch and adds a small set of changes needed by the MINEZ server. Everything not listed below is identical to upstream.
+
+### Supported Versions
+
+Following upstream, only these specific Spigot versions are supported — not the ranges between them:
+
+**1.17.1** · **1.18.2** · **1.19.4** · **1.20.6** · **1.21.11** · **26.1.2** · **26.2**
 
 Our commits follow upstream by rebase, so the history stays linear:
 

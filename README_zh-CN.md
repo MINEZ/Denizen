@@ -7,7 +7,7 @@
 [English](README.md) | [简体中文](README_zh-CN.md)
 
 [![Upstream](https://img.shields.io/badge/upstream-Denizen%201.3.3-1976d2)](https://github.com/DenizenScript/Denizen)
-[![Minecraft](https://img.shields.io/badge/Minecraft-1.17.1%20~%2026.2-4caf50)](https://papermc.io/)
+[![Minecraft](https://img.shields.io/badge/Minecraft-7%20versions-4caf50)](#受支持的版本)
 [![License](https://img.shields.io/badge/license-MIT-9e9e9e)](LICENSE.txt)
 [![Docs](https://img.shields.io/badge/docs-denizen--meta.minez.cc-673ab7)](https://denizen-meta.minez.cc/)
 
@@ -26,6 +26,12 @@
 ## 关于
 
 本仓库跟随上游 `dev` 分支，仅承载 MINEZ 服务器所需的少量改动。除下文列出的内容外，其余部分与上游完全一致。
+
+### 受支持的版本
+
+与上游一致，仅支持下列特定的 Spigot 版本，其间的其他版本并不受支持：
+
+**1.17.1** · **1.18.2** · **1.19.4** · **1.20.6** · **1.21.11** · **26.1.2** · **26.2**
 
 我们的提交以变基方式跟随上游，历史保持线性：
 
