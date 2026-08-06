@@ -4,16 +4,23 @@
 
 A fork of [Denizen](https://github.com/DenizenScript/Denizen) maintained for the MINEZ server.
 
-[English](README.md) | [简体中文](docs/README_zh-CN.md)
+<a href="README.md">English</a> ｜
+<a href="docs/README_zh-CN.md">简体中文</a>
 
-[![Upstream](https://img.shields.io/badge/upstream-Denizen%201.3.3-1976d2)](https://github.com/DenizenScript/Denizen)
-[![Minecraft](https://img.shields.io/badge/Minecraft-7%20versions-4caf50)](#supported-versions)
-[![License](https://img.shields.io/badge/license-MIT-9e9e9e)](LICENSE.txt)
-[![Docs](https://img.shields.io/badge/docs-denizen--meta.minez.cc-673ab7)](https://denizen-meta.minez.cc/)
+<br>
 
-### [Documentation &rarr; denizen-meta.minez.cc](https://denizen-meta.minez.cc/)
+<div>
+<a href="https://github.com/DenizenScript/Denizen"><img src="https://img.shields.io/badge/upstream-Denizen%201.3.3-1976d2" alt="upstream"></a>
+<a href="#supported-versions"><img src="https://img.shields.io/badge/Minecraft-7%20versions-4caf50" alt="Minecraft"></a>
+<a href="LICENSE.txt"><img src="https://img.shields.io/badge/license-MIT-9e9e9e" alt="license"></a>
+</div>
 
-Every tag, command, event and script container, including everything this fork adds.
+<br>
+
+<a href="https://denizen-meta.minez.cc/">Documentation</a> ｜
+<a href="https://github.com/MINEZ/Denizen/issues">Issue Tracker</a> ｜
+<a href="https://github.com/MINEZ/Denizen/releases">Releases</a> ｜
+<a href="#changes-from-upstream">What's Changed</a>
 
 </div>
 

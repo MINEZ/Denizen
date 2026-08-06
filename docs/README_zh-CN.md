@@ -4,16 +4,23 @@
 
 面向 MINEZ 服务器维护的 [Denizen](https://github.com/DenizenScript/Denizen) Fork。
 
-[English](../README.md) | [简体中文](README_zh-CN.md)
+<a href="../README.md">English</a> ｜
+<a href="README_zh-CN.md">简体中文</a>
 
-[![Upstream](https://img.shields.io/badge/upstream-Denizen%201.3.3-1976d2)](https://github.com/DenizenScript/Denizen)
-[![Minecraft](https://img.shields.io/badge/Minecraft-7%20versions-4caf50)](#受支持的版本)
-[![License](https://img.shields.io/badge/license-MIT-9e9e9e)](../LICENSE.txt)
-[![Docs](https://img.shields.io/badge/docs-denizen--meta.minez.cc-673ab7)](https://denizen-meta.minez.cc/)
+<br>
 
-### [查阅文档 &rarr; denizen-meta.minez.cc](https://denizen-meta.minez.cc/)
+<div>
+<a href="https://github.com/DenizenScript/Denizen"><img src="https://img.shields.io/badge/upstream-Denizen%201.3.3-1976d2" alt="upstream"></a>
+<a href="#受支持的版本"><img src="https://img.shields.io/badge/Minecraft-7%20versions-4caf50" alt="Minecraft"></a>
+<a href="../LICENSE.txt"><img src="https://img.shields.io/badge/license-MIT-9e9e9e" alt="license"></a>
+</div>
 
-涵盖全部标签、命令、事件与脚本容器，包含本 Fork 新增的内容。
+<br>
+
+<a href="https://denizen-meta.minez.cc/">查阅文档</a> ｜
+<a href="https://github.com/MINEZ/Denizen/issues">问题反馈</a> ｜
+<a href="https://github.com/MINEZ/Denizen/releases">版本发布</a> ｜
+<a href="#相对上游的改动">改动一览</a>
 
 </div>
 
