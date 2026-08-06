@@ -11,6 +11,10 @@ A fork of [Denizen](https://github.com/DenizenScript/Denizen) maintained for the
 [![License](https://img.shields.io/badge/license-MIT-9e9e9e)](LICENSE.txt)
 [![Docs](https://img.shields.io/badge/docs-denizen--meta.minez.cc-673ab7)](https://denizen-meta.minez.cc/)
 
+### [Documentation &rarr; denizen-meta.minez.cc](https://denizen-meta.minez.cc/)
+
+Every tag, command, event and script container, including everything this fork adds.
+
 </div>
 
 > [!IMPORTANT]

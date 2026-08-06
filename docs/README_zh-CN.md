@@ -11,6 +11,10 @@
 [![License](https://img.shields.io/badge/license-MIT-9e9e9e)](../LICENSE.txt)
 [![Docs](https://img.shields.io/badge/docs-denizen--meta.minez.cc-673ab7)](https://denizen-meta.minez.cc/)
 
+### [查阅文档 &rarr; denizen-meta.minez.cc](https://denizen-meta.minez.cc/)
+
+涵盖全部标签、命令、事件与脚本容器，包含本 Fork 新增的内容。
+
 </div>
 
 > [!IMPORTANT]
