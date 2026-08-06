@@ -1,3 +1,12 @@
+/*
+ * Portions of this file are derived from denizen-utilities
+ * (https://github.com/isnsest/denizen-utilities), Copyright (c) the denizen-utilities authors,
+ * licensed under the Apache License, Version 2.0. A copy of that license is included at
+ * licenses/denizen-utilities-LICENSE.txt in this repository.
+ *
+ * This file has been modified from the original: it was adapted to this project's package
+ * layout and registration flow, and its behaviour differs as described in the README.
+ */
 package com.denizenscript.denizen.paper;
 
 import com.denizenscript.denizen.Denizen;

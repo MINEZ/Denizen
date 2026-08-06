@@ -66,7 +66,7 @@ Usage documentation lives in the meta comments in the source and is published au
 
 **Dialogs.** A `dialog` script container backed by Paper's dialog API, covering the `confirm`, `notice`, `list` and `multi` layouts, along with `base`, `bodies`, `inputs`, `buttons` and a `procedural` section for building content dynamically. Requires Paper 1.21.6 or newer; on older or non-Paper servers these are not registered and `type: dialog` containers will fail to load, while everything else is unaffected.
 
-The interface mirrors the denizen-utilities plugin so existing `type: dialog` scripts migrate unchanged, with two deliberate differences: `exit button` is now read from the `base` section (the original only read the container root, so exit buttons never took effect), with the old placement still accepted; and a button with no `script` section no longer binds a click action, so clicking it simply closes the dialog.
+This subsystem is derived from [denizen-utilities](https://github.com/isnsest/denizen-utilities), which is licensed under the Apache License 2.0, and keeps its interface so existing `type: dialog` scripts migrate unchanged. Two deliberate differences: `exit button` is now read from the `base` section (the original only read the container root, so exit buttons never took effect), with the old placement still accepted; and a button with no `script` section no longer binds a click action, so clicking it simply closes the dialog.
 
 **Inline images.** `<&head[...]>` and `<&sprite[...]>` emit the object text components added in 1.21.9, rendering a player face or an atlas sprite inline in chat. Denizen's text pipeline is built on the BungeeCord Chat API, which is frozen and drops this component type, so the fork carries its own component and serializer. **Requires a 1.21.9+ client** — older clients render nothing, without erroring.
 
@@ -112,3 +112,15 @@ The changes here are built for one server's needs and are maintained separately.
 Denizen is open source under the MIT License, Copyright (c) The Denizen Script Team. Modifications in this fork are provided under the same terms. See [LICENSE.txt](LICENSE.txt) for the full text.
 
 The short of it: you can do basically whatever you want, except hold any developer liable for what you do with the software.
+
+### Third-Party Code
+
+The dialog subsystem is derived from [denizen-utilities](https://github.com/isnsest/denizen-utilities), Copyright (c) the denizen-utilities authors, licensed under the **Apache License, Version 2.0**. Those files remain under that license rather than MIT, carry a notice saying they have been modified, and are listed here:
+
+- `paper/src/main/java/com/denizenscript/denizen/paper/PaperDialogModule.java`
+- `paper/src/main/java/com/denizenscript/denizen/paper/commands/ShowDialogCommand.java`
+- `paper/src/main/java/com/denizenscript/denizen/paper/containers/DialogScriptContainer.java`
+- `paper/src/main/java/com/denizenscript/denizen/paper/containers/DialogScriptHelper.java`
+- `paper/src/main/java/com/denizenscript/denizen/paper/events/PlayerCustomClickScriptEvent.java`
+
+A copy of the Apache License 2.0 is included at [licenses/denizen-utilities-LICENSE.txt](licenses/denizen-utilities-LICENSE.txt).

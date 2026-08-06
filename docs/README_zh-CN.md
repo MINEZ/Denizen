@@ -66,7 +66,7 @@ git rebase upstream/dev
 
 **对话框。** 基于 Paper dialog API 的 `dialog` 脚本容器，支持 `confirm`、`notice`、`list`、`multi` 四种版式，以及 `base`、`bodies`、`inputs`、`buttons` 与用于动态生成内容的 `procedural` 段。依赖 Paper 1.21.6 及以上版本；在更低版本或非 Paper 服务端上这些内容不会被注册，`type: dialog` 容器将无法加载，其余内容不受影响。
 
-接口与 denizen-utilities 插件保持一致，原有 `type: dialog` 脚本无需改动即可迁移，仅有两处刻意的差异：`exit button` 改为从 `base` 段读取（原实现只读容器根部，导致退出按钮始终不生效），同时兼容旧写法；没有 `script` 段的按钮不再绑定点击动作，点击后仅关闭对话框。
+本部分衍生自以 Apache 2.0 许可证发布的 [denizen-utilities](https://github.com/isnsest/denizen-utilities)，并沿用其接口，原有 `type: dialog` 脚本无需改动即可迁移。有两处刻意的差异：`exit button` 改为从 `base` 段读取（原实现只读容器根部，导致退出按钮始终不生效），同时兼容旧写法；没有 `script` 段的按钮不再绑定点击动作，点击后仅关闭对话框。
 
 **内联图像。** `<&head[...]>` 与 `<&sprite[...]>` 输出 1.21.9 引入的 object 类型文本组件，可在聊天中内联渲染玩家头像或图集精灵。Denizen 的文本管线建立在已被冻结的 BungeeCord Chat API 之上，会丢弃这一类型的组件，因此本 Fork 自带了对应的组件与序列化器。**需要 1.21.9 及以上的客户端**，低版本客户端不会显示，但也不会报错。
 
@@ -112,3 +112,15 @@ Denizen 由 [DenizenScript 团队](https://denizenscript.com/)开发。学习这
 Denizen 以 MIT 许可证开源，版权归 The Denizen Script Team 所有。本 Fork 的修改同样适用该许可证。完整条款见 [LICENSE.txt](../LICENSE.txt)。
 
 简而言之：你几乎可以做任何事，但不得就你使用本软件所造成的后果追究任何开发者的责任。
+
+### 第三方代码
+
+对话框部分衍生自 [denizen-utilities](https://github.com/isnsest/denizen-utilities)，版权归该项目作者所有，以 **Apache License 2.0** 许可。这些文件适用该许可证而非 MIT，文件头部标注了已被修改，清单如下：
+
+- `paper/src/main/java/com/denizenscript/denizen/paper/PaperDialogModule.java`
+- `paper/src/main/java/com/denizenscript/denizen/paper/commands/ShowDialogCommand.java`
+- `paper/src/main/java/com/denizenscript/denizen/paper/containers/DialogScriptContainer.java`
+- `paper/src/main/java/com/denizenscript/denizen/paper/containers/DialogScriptHelper.java`
+- `paper/src/main/java/com/denizenscript/denizen/paper/events/PlayerCustomClickScriptEvent.java`
+
+Apache License 2.0 的完整条款见 [licenses/denizen-utilities-LICENSE.txt](../licenses/denizen-utilities-LICENSE.txt)。
