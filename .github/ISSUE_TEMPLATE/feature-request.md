@@ -1,14 +1,17 @@
 ---
 name: Feature Request
-about: Suggest something new to add. DO NOT POST HERE UNLESS SOMEONE TOLD YOU TO ON DISCORD.
-
+about: Suggest something for this fork
 ---
 
 <!--
-IMPORTANT: Support is on Discord @ https://discord.gg/Q6pZGSR
-You should only post on GitHub if you've been directed here from the Discord.
+This tracker is for the MINEZ fork of Denizen only.
 
-Please ensure you're running the latest version of Denizen (new features are not backported).
-Please also ensure that what you're asking is not already present in Denizen.
-Describe your request below.
+This fork exists to serve one server, so its scope is narrow. Requests of general
+value are better proposed upstream, where they will reach far more people.
 -->
+
+**What you want to be able to do:**
+
+**Why the existing tags, commands, or events are not enough:**
+
+**Is this specific to this fork, or would it make sense upstream as well?**
