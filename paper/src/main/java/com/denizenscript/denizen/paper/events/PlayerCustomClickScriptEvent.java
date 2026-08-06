@@ -30,6 +30,7 @@ import io.papermc.paper.event.player.PlayerCustomClickEvent;
 import net.kyori.adventure.key.Key;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.util.List;
 import java.util.Map;
@@ -118,9 +119,14 @@ public class PlayerCustomClickScriptEvent extends ScriptEvent {
     public static class DialogEvents implements Listener {
 
         @EventHandler
+        public void onPlayerQuit(PlayerQuitEvent event) {
+            DialogScriptHelper.dialogDataMap.remove(event.getPlayer().getUniqueId());
+        }
+
+        @EventHandler
         public void onDialogClick(PlayerCustomClickEvent event) {
             ButtonPathInfo pathInfo = parseButtonKey(event.getIdentifier());
-            DialogScriptHelper.DialogData dialogData = DialogScriptHelper.dialogDataMap.get(event.getCommonConnection());
+            DialogScriptHelper.DialogData dialogData = DialogScriptHelper.getDialogData(event.getCommonConnection());
             instance.event = event;
             instance.dialogData = dialogData;
             instance.buttonId = pathInfo.buttonId();
