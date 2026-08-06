@@ -93,7 +93,7 @@ public class DialogScriptContainer extends ScriptContainer {
     // they are automatically escaped at load-time to prevent premature execution.
     //
     // <code>
-    // Dialog_Script_Name:
+    // dialog_script_name:
     //     type: dialog
     //
     //     base:
