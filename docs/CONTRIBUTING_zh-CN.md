@@ -1,6 +1,6 @@
 # 贡献指南
 
-[English](CONTRIBUTING.md) | [简体中文](CONTRIBUTING_zh-CN.md)
+[English](../CONTRIBUTING.md) | [简体中文](CONTRIBUTING_zh-CN.md)
 
 > [!IMPORTANT]
 > 本项目是 [Denizen](https://github.com/DenizenScript/Denizen) 的非官方 Fork，为 MINEZ 服务器而维护，与 DenizenScript 团队没有关系，既未经其认可，也不由其提供支持。

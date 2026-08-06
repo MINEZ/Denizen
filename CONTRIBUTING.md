@@ -1,6 +1,6 @@
 # Contributing
 
-[English](CONTRIBUTING.md) | [简体中文](CONTRIBUTING_zh-CN.md)
+[English](CONTRIBUTING.md) | [简体中文](docs/CONTRIBUTING_zh-CN.md)
 
 > [!IMPORTANT]
 > This is an unofficial fork of [Denizen](https://github.com/DenizenScript/Denizen), maintained for the MINEZ server. It is not affiliated with, endorsed by, or supported by the DenizenScript team.

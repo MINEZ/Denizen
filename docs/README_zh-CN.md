@@ -4,11 +4,11 @@
 
 面向 MINEZ 服务器维护的 [Denizen](https://github.com/DenizenScript/Denizen) Fork。
 
-[English](README.md) | [简体中文](README_zh-CN.md)
+[English](../README.md) | [简体中文](README_zh-CN.md)
 
 [![Upstream](https://img.shields.io/badge/upstream-Denizen%201.3.3-1976d2)](https://github.com/DenizenScript/Denizen)
 [![Minecraft](https://img.shields.io/badge/Minecraft-7%20versions-4caf50)](#受支持的版本)
-[![License](https://img.shields.io/badge/license-MIT-9e9e9e)](LICENSE.txt)
+[![License](https://img.shields.io/badge/license-MIT-9e9e9e)](../LICENSE.txt)
 [![Docs](https://img.shields.io/badge/docs-denizen--meta.minez.cc-673ab7)](https://denizen-meta.minez.cc/)
 
 </div>
@@ -109,6 +109,6 @@ Denizen 由 [DenizenScript 团队](https://denizenscript.com/)开发。学习这
 
 ## 许可证
 
-Denizen 以 MIT 许可证开源，版权归 The Denizen Script Team 所有。本 Fork 的修改同样适用该许可证。完整条款见 [LICENSE.txt](LICENSE.txt)。
+Denizen 以 MIT 许可证开源，版权归 The Denizen Script Team 所有。本 Fork 的修改同样适用该许可证。完整条款见 [LICENSE.txt](../LICENSE.txt)。
 
 简而言之：你几乎可以做任何事，但不得就你使用本软件所造成的后果追究任何开发者的责任。
