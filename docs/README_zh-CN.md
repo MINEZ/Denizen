@@ -115,7 +115,7 @@ Denizen 以 MIT 许可证开源，版权归 The Denizen Script Team 所有。本
 
 ### 第三方代码
 
-对话框部分衍生自 [denizen-utilities](https://github.com/isnsest/denizen-utilities)，版权归该项目作者所有，以 **Apache License 2.0** 许可。这些文件适用该许可证而非 MIT，文件头部标注了已被修改，清单如下：
+对话框部分衍生自 [denizen-utilities](https://github.com/isnsest/denizen-utilities)，版权归 isnsest 所有，以 **Apache License 2.0** 许可。这些文件适用该许可证而非 MIT，文件头部标注了已被修改，清单如下：
 
 - `paper/src/main/java/com/denizenscript/denizen/paper/PaperDialogModule.java`
 - `paper/src/main/java/com/denizenscript/denizen/paper/commands/ShowDialogCommand.java`

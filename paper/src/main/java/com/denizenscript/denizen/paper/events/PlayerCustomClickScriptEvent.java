@@ -1,6 +1,6 @@
 /*
  * Portions of this file are derived from denizen-utilities
- * (https://github.com/isnsest/denizen-utilities), Copyright (c) the denizen-utilities authors,
+ * (https://github.com/isnsest/denizen-utilities), Copyright (c) isnsest,
  * licensed under the Apache License, Version 2.0. A copy of that license is included at
  * licenses/denizen-utilities-LICENSE.txt in this repository.
  *
