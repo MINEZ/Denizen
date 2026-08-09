@@ -34,6 +34,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.*;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.*;
@@ -262,6 +263,11 @@ public class PaperAPIToolsImpl extends PaperAPITools {
     @Override
     public String getDeathMessage(PlayerDeathEvent event) {
         return PaperModule.stringifyComponent(event.deathMessage());
+    }
+
+    @Override
+    public boolean isMissingRespawnBlock(PlayerRespawnEvent event) {
+        return event.isMissingRespawnBlock();
     }
 
     @Override
