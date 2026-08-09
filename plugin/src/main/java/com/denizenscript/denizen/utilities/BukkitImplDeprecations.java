@@ -489,6 +489,9 @@ public class BukkitImplDeprecations {
     // Added 2025/09/22
     public static Warning playerSteerEntityEvent = new FutureWarning("playerSteerEntityEvent", "The 'player steers <entity>' event is deprecated in favor of the 'player input' event in MC 1.21+.");
 
+    // Added 2026/08/07
+    public static Warning playerRespawnsAtBedEvent = new FutureWarning("playerRespawnsAtBedEvent", "The 'player respawns at bed' and 'player respawns elsewhere' events are deprecated in favor of the 'spawn_type:' switch, which also distinguishes respawn anchors.");
+
     // ==================== PAST deprecations of things that are already gone but still have a warning left behind ====================
 
     // Removed upstream 2025/02/15
