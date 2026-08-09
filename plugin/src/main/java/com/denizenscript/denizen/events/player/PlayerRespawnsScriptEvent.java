@@ -3,6 +3,7 @@ package com.denizenscript.denizen.events.player;
 import com.denizenscript.denizen.objects.EntityTag;
 import com.denizenscript.denizen.objects.LocationTag;
 import com.denizenscript.denizen.utilities.BukkitImplDeprecations;
+import com.denizenscript.denizen.utilities.PaperAPITools;
 import com.denizenscript.denizen.utilities.implementation.BukkitScriptEntryData;
 import com.denizenscript.denizen.events.BukkitScriptEvent;
 import com.denizenscript.denizencore.objects.ObjectTag;
@@ -30,7 +31,7 @@ public class PlayerRespawnsScriptEvent extends BukkitScriptEvent implements List
     // <context.location> returns a LocationTag of the respawn location.
     // <context.spawn_type> returns the type of respawn point being used: bed, anchor, or world.
     // <context.reason> returns why the respawn happened: death, end_portal, or plugin.
-    // <context.is_missing_respawn_block> returns a boolean indicating whether the player's bed or respawn anchor was gone, sending them to the world spawn instead.
+    // <context.is_missing_respawn_block> returns a boolean indicating whether the player's bed or respawn anchor was gone, sending them to the world spawn instead. Requires Paper, and is always false otherwise.
     // <context.is_bed_spawn> returns a boolean indicating whether the player is about to respawn at their bed. Prefer <context.spawn_type>.
     //
     // @Determine
@@ -126,7 +127,7 @@ public class PlayerRespawnsScriptEvent extends BukkitScriptEvent implements List
             return new ElementTag(CoreUtilities.toLowerCase(event.getRespawnReason().name()));
         }
         else if (name.equals("is_missing_respawn_block")) {
-            return new ElementTag(event.isMissingRespawnBlock());
+            return new ElementTag(PaperAPITools.instance.isMissingRespawnBlock(event));
         }
         return super.getContext(name);
     }
