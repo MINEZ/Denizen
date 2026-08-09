@@ -18,6 +18,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.*;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.*;
@@ -161,6 +162,11 @@ public class PaperAPITools {
 
     public String getDeathMessage(PlayerDeathEvent event) {
         return event.getDeathMessage();
+    }
+
+    /** 玩家的床或重生锚是否已失效，Spigot 未提供该信息。 */
+    public boolean isMissingRespawnBlock(PlayerRespawnEvent event) {
+        return false;
     }
 
     public void setDeathMessage(PlayerDeathEvent event, String message) {
