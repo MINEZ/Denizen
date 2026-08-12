@@ -15,6 +15,16 @@
 <a href="../LICENSE.txt"><img src="https://img.shields.io/badge/license-MIT-9e9e9e" alt="license"></a>
 </div>
 
+<div>
+<img src="https://img.shields.io/badge/1.17.1-81c784" alt="1.17.1">
+<img src="https://img.shields.io/badge/1.18.2-81c784" alt="1.18.2">
+<img src="https://img.shields.io/badge/1.19.4-81c784" alt="1.19.4">
+<img src="https://img.shields.io/badge/1.20.6-81c784" alt="1.20.6">
+<img src="https://img.shields.io/badge/1.21.11-81c784" alt="1.21.11">
+<img src="https://img.shields.io/badge/26.1.2-81c784" alt="26.1.2">
+<img src="https://img.shields.io/badge/26.2-81c784" alt="26.2">
+</div>
+
 <br>
 
 <a href="https://denizen-meta.minez.cc/">查阅文档</a> ｜
@@ -40,9 +50,7 @@
 
 ### 受支持的版本
 
-与上游一致，仅支持下列特定的 Spigot 版本，其间的其他版本并不受支持：
-
-**1.17.1** · **1.18.2** · **1.19.4** · **1.20.6** · **1.21.11** · **26.1.2** · **26.2**
+与上游一致，仅支持本页顶部列出的这几个 Spigot 版本，其间的其他版本并不受支持。
 
 我们的提交以变基方式跟随上游，历史保持线性：
 
