@@ -71,6 +71,7 @@ git rebase upstream/dev
 | `PlayerTag.show_dialog` | 机制 | 新增 |
 | `PlayerTag.close_dialog` | 机制 | 新增 |
 | `cast` | 命令 | 修改 |
+| 仅适用于生物实体的机制 | 机制 | 修复 |
 | `player respawns` | 事件 | 修改 |
 | `projectile launched` | 事件 | 修复 |
 | `potion effects modified` | 事件 | 修复 |
@@ -89,6 +90,7 @@ git rebase upstream/dev
 
 ### 修复
 
+- **仅适用于生物实体的机制** —— `no_damage_duration`、`oxygen`、`gliding` 等十余个机制未经判断便按生物实体取用，对船、矿车、画一类实体使用时会抛出空指针异常，现改为说明是哪个机制用在了什么实体上。`cast` 命令存在同样的缺陷，一并加以防护。
 - **`projectile launched` 事件** —— `<context.shooter>` 在弹射物没有射手时（例如由发射器发射）会抛出空指针异常，现改为返回 null。
 - **`potion effects modified` 事件** —— `<context.effect_type>` 与 `effect` 开关此前使用 Bukkit 的旧式效果名（如 `SLOW`、`FAST_DIGGING`），现改用现代的键名（`slowness`、`haste`），与 Denizen 其余部分保持一致。
 
