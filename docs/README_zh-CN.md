@@ -71,8 +71,8 @@ git rebase upstream/dev
 | `PlayerTag.show_dialog` | 机制 | 新增 |
 | `PlayerTag.close_dialog` | 机制 | 新增 |
 | `cast` | 命令 | 修改 |
-| 仅适用于生物实体的机制 | 机制 | 修复 |
 | `player respawns` | 事件 | 修改 |
+| `EntityTag` 中仅适用于生物实体的机制 | 机制 | 修复 |
 | `projectile launched` | 事件 | 修复 |
 | `potion effects modified` | 事件 | 修复 |
 
