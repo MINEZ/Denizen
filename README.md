@@ -71,6 +71,7 @@ Usage documentation lives in the meta comments in the source and is published au
 | `PlayerTag.show_dialog` | Mechanism | Added |
 | `PlayerTag.close_dialog` | Mechanism | Added |
 | `cast` | Command | Changed |
+| Living-entity mechanisms | Mechanism | Fixed |
 | `player respawns` | Event | Changed |
 | `projectile launched` | Event | Fixed |
 | `potion effects modified` | Event | Fixed |
@@ -89,6 +90,7 @@ This subsystem is derived from [denizen-utilities](https://github.com/isnsest/de
 
 ### Fixes
 
+- **Mechanisms that only apply to living entities** — `no_damage_duration`, `oxygen`, `gliding` and ten others read the entity as a living one without checking first, so using them on a boat, minecart or painting threw a raw null pointer exception. They now report which mechanism was misapplied and to what. The `cast` command had the same flaw and is guarded too.
 - **`projectile launched` event** — `<context.shooter>` threw a null pointer exception when the projectile had no shooter, such as one fired by a dispenser. It now returns null.
 - **`potion effects modified` event** — `<context.effect_type>` and the `effect` switch used Bukkit's legacy effect names such as `SLOW` and `FAST_DIGGING`. They now use the modern keys, `slowness` and `haste`, matching the rest of Denizen.
 
