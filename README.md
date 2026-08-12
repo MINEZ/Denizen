@@ -102,11 +102,11 @@ Requires JDK 17+ and all listed Spigot versions installed via [BuildTools](https
 mvn clean package -DBUILD_NUMBER=<upstream build>.<fork revision> -DBUILD_CLASS=DEV
 ```
 
-The result lands in `target/`, for example `Denizen-1.3.3-b7299.4-DEV.jar`.
+The result lands in `target/`, for example `Denizen-1.3.3-b7301.1-DEV.jar`.
 
 ## Versioning
 
-The project version follows upstream unchanged. Fork revisions are recorded in the build number instead: in `Denizen-1.3.3-b7299.4-DEV`, `7299` is the upstream build this is based on and the trailing `.4` is the fork revision. This keeps our version numbers from colliding with upstream releases and avoids conflicts in `pom.xml` when merging.
+The project version follows upstream unchanged. Fork revisions are recorded in the build number instead: in `Denizen-1.3.3-b7301.1-DEV`, `7301` is the upstream build this is based on and the trailing `.1` is the fork revision. This keeps our version numbers from colliding with upstream releases and avoids conflicts in `pom.xml` when merging.
 
 The download links on the upstream project point at the official CI and do **not** include these changes.
 
