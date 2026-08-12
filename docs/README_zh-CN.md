@@ -70,6 +70,7 @@ git rebase upstream/dev
 | `player custom click` | 事件 | 新增 |
 | `PlayerTag.show_dialog` | 机制 | 新增 |
 | `PlayerTag.close_dialog` | 机制 | 新增 |
+| `cast` | 命令 | 修改 |
 | `player respawns` | 事件 | 修改 |
 | `projectile launched` | 事件 | 修复 |
 | `potion effects modified` | 事件 | 修复 |
@@ -83,6 +84,8 @@ git rebase upstream/dev
 **内联图像。** `<&head[...]>` 与 `<&sprite[...]>` 输出 1.21.9 引入的 object 类型文本组件，可在聊天中内联渲染玩家头像或图集精灵。Denizen 的文本管线建立在已被冻结的 BungeeCord Chat API 之上，会丢弃这一类型的组件，因此本 Fork 自带了对应的组件与序列化器。**需要 1.21.9 及以上的客户端**，低版本客户端不会显示，但也不会报错。
 
 **重生点。** 上游的 `player respawns` 事件只区分是否为床，重生锚与世界出生点无从分辨。现改为完整暴露服务端提供的信息：`<context.spawn_type>`（bed、anchor 或 world）、`<context.reason>`（death、end_portal 或 plugin），以及在床或锚被破坏时为真的 `<context.is_missing_respawn_block>`，并配有 `spawn_type:` 与 `reason:` 两个开关。旧的 `at bed` 与 `elsewhere` 写法仍可使用，但加载时会给出废弃提示。
+
+**重复施加的药水效果。** 上游的 `cast` 把 Bukkit 返回的 `false` 一律当作失败并报错，而该返回值仅表示效果表未发生改变——目标身上已有同等或更强的效果时，这本就是正常结果。现改为区分两者，仅在效果确实无法施加时才报错。
 
 ### 修复
 
