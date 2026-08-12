@@ -3467,6 +3467,15 @@ public class EntityTag implements ObjectTag, Adjustable, EntityFormObject, Flagg
     }
 
     @Override
+    /**
+     * 仅适用于生物实体的机制。这些机制的实现直接取用 getLivingEntity()，
+     * 若不先行拦下，对船、矿车、画一类非生物实体使用时会抛出空指针异常。
+     */
+    public static final Set<String> LIVING_ONLY_MECHANISMS = Set.of(
+            "absorption_health", "can_pickup_items", "gliding", "leash_holder", "max_no_damage_duration",
+            "melee_attack", "no_damage_duration", "oxygen", "persistent", "play_death",
+            "remove_effects", "remove_when_far_away", "swimming");
+
     public void adjust(Mechanism mechanism) {
         if (isGeneric()) {
             mechanisms.add(mechanism);
@@ -3480,6 +3489,10 @@ public class EntityTag implements ObjectTag, Adjustable, EntityFormObject, Flagg
             else {
                 mechanism.echoError("Cannot adjust entity " + this);
             }
+            return;
+        }
+        if (!isLivingEntityType() && LIVING_ONLY_MECHANISMS.contains(CoreUtilities.toLowerCase(mechanism.getName()))) {
+            mechanism.echoError("Mechanism '" + mechanism.getName() + "' requires a living entity, but " + this + " is not one.");
             return;
         }
 
@@ -3872,6 +3885,9 @@ public class EntityTag implements ObjectTag, Adjustable, EntityFormObject, Flagg
         if (mechanism.matches("collidable") && mechanism.requireBoolean()) {
             if (isCitizensNPC()) {
                 getDenizenNPC().getCitizen().data().setPersistent(NPC.Metadata.COLLIDABLE, mechanism.getValue().asBoolean());
+            }
+            else if (!isLivingEntityType()) {
+                mechanism.echoError("Mechanism 'collidable' requires a living entity or an NPC, but " + this + " is neither.");
             }
             else {
                 getLivingEntity().setCollidable(mechanism.getValue().asBoolean());

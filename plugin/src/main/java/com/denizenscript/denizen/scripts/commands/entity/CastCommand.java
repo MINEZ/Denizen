@@ -144,6 +144,10 @@ public class CastCommand extends AbstractCommand {
             potion = new PotionEffect(effectType, ticks, amplifier.asInt(), !noAmbient, !hideParticles, !noIcon);
         }
         for (EntityTag entity : entities) {
+            if (!entity.isLivingEntityType()) {
+                Debug.echoError("Cannot apply potion effects to '" + entity + "': it is not a living entity.");
+                continue;
+            }
             if ((remove || !noClear) && entity.getLivingEntity().hasPotionEffect(effectType)) {
                 entity.getLivingEntity().removePotionEffect(effectType);
             }
