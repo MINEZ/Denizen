@@ -71,8 +71,8 @@ Usage documentation lives in the meta comments in the source and is published au
 | `PlayerTag.show_dialog` | Mechanism | Added |
 | `PlayerTag.close_dialog` | Mechanism | Added |
 | `cast` | Command | Changed |
-| Living-entity mechanisms | Mechanism | Fixed |
 | `player respawns` | Event | Changed |
+| `EntityTag` living-entity mechanisms | Mechanism | Fixed |
 | `projectile launched` | Event | Fixed |
 | `potion effects modified` | Event | Fixed |
 
