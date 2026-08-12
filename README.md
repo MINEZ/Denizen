@@ -70,6 +70,7 @@ Usage documentation lives in the meta comments in the source and is published au
 | `player custom click` | Event | Added |
 | `PlayerTag.show_dialog` | Mechanism | Added |
 | `PlayerTag.close_dialog` | Mechanism | Added |
+| `cast` | Command | Changed |
 | `player respawns` | Event | Changed |
 | `projectile launched` | Event | Fixed |
 | `potion effects modified` | Event | Fixed |
@@ -83,6 +84,8 @@ This subsystem is derived from [denizen-utilities](https://github.com/isnsest/de
 **Inline images.** `<&head[...]>` and `<&sprite[...]>` emit the object text components added in 1.21.9, rendering a player face or an atlas sprite inline in chat. Denizen's text pipeline is built on the BungeeCord Chat API, which is frozen and drops this component type, so the fork carries its own component and serializer. **Requires a 1.21.9+ client** — older clients render nothing, without erroring.
 
 **Respawn points.** Upstream's `player respawns` event only tells you whether the respawn point was a bed, so respawn anchors are indistinguishable from the world spawn. The event now carries the full information the server provides — `<context.spawn_type>` (bed, anchor or world), `<context.reason>` (death, end_portal or plugin), and `<context.is_missing_respawn_block>` for when a bed or anchor was destroyed — with matching `spawn_type:` and `reason:` switches. The old `at bed` and `elsewhere` forms still work but warn on load.
+
+**Redundant potion effects.** Upstream's `cast` treats a `false` return from Bukkit as a failure and reports an error, but that return only means the effect table did not change — which is the normal outcome when the target already has an equal or stronger effect. The command now tells the two apart and only reports an error when the effect genuinely could not be applied.
 
 ### Fixes
 
