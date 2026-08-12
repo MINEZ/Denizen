@@ -89,6 +89,20 @@ public class CastCommand extends AbstractCommand {
         }
     }
 
+    /**
+     * 目标身上已有的效果不弱于将要施加的效果时，服务端不会改动效果表，
+     * 施加操作因而返回失败，但这属于预期结果而非异常。
+     */
+    public static boolean isAlreadyCovered(PotionEffect existing, PotionEffect incoming) {
+        if (existing == null || existing.getAmplifier() < incoming.getAmplifier()) {
+            return false;
+        }
+        if (existing.getDuration() == PotionEffect.INFINITE_DURATION) {
+            return true;
+        }
+        return incoming.getDuration() != PotionEffect.INFINITE_DURATION && existing.getDuration() >= incoming.getDuration();
+    }
+
     public static void autoExecute(ScriptEntry scriptEntry,
                                    @ArgName("effect") @ArgLinear ObjectTag effectObject,
                                    @ArgName("remove") boolean remove,
@@ -134,8 +148,14 @@ public class CastCommand extends AbstractCommand {
                 entity.getLivingEntity().removePotionEffect(effectType);
             }
             if (!remove) {
+                PotionEffect existing = entity.getLivingEntity().getPotionEffect(effectType);
                 if (!entity.getLivingEntity().addPotionEffect(potion)) {
-                    Debug.echoError("Bukkit was unable to apply '" + effectType.getName() + "' to '" + entity + "'.");
+                    if (isAlreadyCovered(existing, potion)) {
+                        Debug.echoDebug(scriptEntry, "Left '" + effectType.getName() + "' on '" + entity + "' as-is: the effect already there is not weaker than the one being applied.");
+                    }
+                    else {
+                        Debug.echoError("Bukkit was unable to apply '" + effectType.getName() + "' to '" + entity + "'.");
+                    }
                 }
             }
         }
