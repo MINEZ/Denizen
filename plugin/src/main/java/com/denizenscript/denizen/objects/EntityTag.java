@@ -3466,7 +3466,6 @@ public class EntityTag implements ObjectTag, Adjustable, EntityFormObject, Flagg
         }
     }
 
-    @Override
     /**
      * 仅适用于生物实体的机制。这些机制的实现直接取用 getLivingEntity()，
      * 若不先行拦下，对船、矿车、画一类非生物实体使用时会抛出空指针异常。
@@ -3476,6 +3475,7 @@ public class EntityTag implements ObjectTag, Adjustable, EntityFormObject, Flagg
             "melee_attack", "no_damage_duration", "oxygen", "persistent", "play_death",
             "remove_effects", "remove_when_far_away", "swimming");
 
+    @Override
     public void adjust(Mechanism mechanism) {
         if (isGeneric()) {
             mechanisms.add(mechanism);
