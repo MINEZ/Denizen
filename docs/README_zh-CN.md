@@ -94,7 +94,7 @@ git rebase upstream/dev
 
 **重生点。** 上游的 `player respawns` 事件只区分是否为床，重生锚与世界出生点无从分辨。现改为完整暴露服务端提供的信息：`<context.spawn_type>`（bed、anchor 或 world）、`<context.reason>`（death、end_portal 或 plugin），以及在床或锚被破坏时为真的 `<context.is_missing_respawn_block>`，并配有 `spawn_type:` 与 `reason:` 两个开关。旧的 `at bed` 与 `elsewhere` 写法仍可使用，但加载时会给出废弃提示。
 
-**重复施加的药水效果。** 上游的 `cast` 把 Bukkit 返回的 `false` 一律当作失败并报错，而该返回值仅表示效果表未发生改变——目标身上已有同等或更强的效果时，这本就是正常结果。现改为区分两者，仅在效果确实无法施加时才报错。
+**重复施加的药水效果。** 上游的 `cast` 把 Bukkit 返回的 `false` 一律当作失败并报错，而该返回值仅表示效果表未发生改变。目标身上已有同类且等级不低的效果时，这本就是正常结果——已有效果或是继续生效，或是将新效果存为隐藏效果，待其结束后自行接上。现改为区分两者，仅在效果确实无法施加时才报错。
 
 ### 修复
 
