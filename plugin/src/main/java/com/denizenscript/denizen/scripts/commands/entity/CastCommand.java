@@ -90,17 +90,13 @@ public class CastCommand extends AbstractCommand {
     }
 
     /**
-     * 目标身上已有的效果不弱于将要施加的效果时，服务端不会改动效果表，
-     * 施加操作因而返回失败，但这属于预期结果而非异常。
+     * 目标身上已有的效果等级不低于将要施加者时，服务端不会改动效果表，
+     * 施加操作因而返回失败，但这属于预期结果而非异常：
+     * 已有效果或是继续生效，或是将新效果存为隐藏效果，待其结束后自行接上。
+     * 等级相同而新效果更久的情形不会走到这里，那种情况下施加是成功的。
      */
     public static boolean isAlreadyCovered(PotionEffect existing, PotionEffect incoming) {
-        if (existing == null || existing.getAmplifier() < incoming.getAmplifier()) {
-            return false;
-        }
-        if (existing.getDuration() == PotionEffect.INFINITE_DURATION) {
-            return true;
-        }
-        return incoming.getDuration() != PotionEffect.INFINITE_DURATION && existing.getDuration() >= incoming.getDuration();
+        return existing != null && existing.getAmplifier() >= incoming.getAmplifier();
     }
 
     public static void autoExecute(ScriptEntry scriptEntry,
