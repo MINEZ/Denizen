@@ -30,8 +30,10 @@ public class PlayerRespawnsScriptEvent extends BukkitScriptEvent implements List
     // @Context
     // <context.location> returns a LocationTag of the respawn location.
     // <context.spawn_type> returns the type of respawn point being used: bed, anchor, or world.
+    // 'world' covers every respawn at the world spawn, whether the player never set a respawn point or theirs is no longer usable.
     // <context.reason> returns why the respawn happened: death, end_portal, or plugin.
-    // <context.is_missing_respawn_block> returns a boolean indicating whether the player's bed or respawn anchor was gone, sending them to the world spawn instead. Requires Paper, and is always false otherwise.
+    // <context.is_missing_respawn_block> returns a boolean indicating whether a respawn point the player had set has become unusable: obstructed, destroyed, or, for a respawn anchor, out of charges.
+    // This is false for a player who never set a respawn point at all, so use <context.spawn_type> to test for respawning at the world spawn. Requires Paper, and is always false otherwise.
     // <context.is_bed_spawn> returns a boolean indicating whether the player is about to respawn at their bed. Prefer <context.spawn_type>.
     //
     // @Determine
@@ -45,10 +47,12 @@ public class PlayerRespawnsScriptEvent extends BukkitScriptEvent implements List
     // - narrate "You respawned at your <context.spawn_type>."
     //
     // @Example
-    // # Only runs when a player's bed or anchor was destroyed while they were away.
+    // # Runs for every respawn at the world spawn, and says something extra to those who did have a respawn point.
     // on player respawns spawn_type:world:
     // - if <context.is_missing_respawn_block>:
     //   - narrate "<&c>Your respawn point is gone."
+    // - else:
+    //   - narrate "<&7>Sleep in a bed to set a respawn point."
     //
     // -->
 
