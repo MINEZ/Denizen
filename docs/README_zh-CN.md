@@ -110,11 +110,11 @@ git rebase upstream/dev
 mvn clean package -DBUILD_NUMBER=<上游构建号>.<Fork 修订号> -DBUILD_CLASS=DEV
 ```
 
-产物位于 `target/`，形如 `Denizen-1.3.3-b7301.1-DEV.jar`。
+产物位于 `target/`，形如 `Denizen-1.3.3-b7302.1-DEV.jar`。
 
 ## 版本号
 
-项目版本号沿用上游，不作改动。Fork 的修订信息记录在构建号中：在 `Denizen-1.3.3-b7301.1-DEV` 中，`7301` 是所基于的上游构建号，末尾的 `.1` 是本 Fork 的修订号。这样既不会与上游的版本号撞车，合并上游时也不会在 `pom.xml` 上产生冲突。
+项目版本号沿用上游，不作改动。Fork 的修订信息记录在构建号中：在 `Denizen-1.3.3-b7302.1-DEV` 中，`7302` 是所基于的上游构建号，末尾的 `.1` 是本 Fork 的修订号。这样既不会与上游的版本号撞车，合并上游时也不会在 `pom.xml` 上产生冲突。
 
 上游项目页面上的下载链接指向官方 CI，**不包含**本 Fork 的改动。
 
