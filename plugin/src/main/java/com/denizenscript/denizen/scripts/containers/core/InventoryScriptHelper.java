@@ -58,8 +58,16 @@ public class InventoryScriptHelper implements Listener {
         toClearOfflinePlayers.clear();
     }
 
-    /** 取得正在查看该离线玩家数据的缓存项，没有则返回 null。 */
+    /**
+     * 取得正在查看该离线玩家数据的缓存项，没有则返回 null。
+     * 离线玩家的物品栏与末影箱分别为 PLAYER 与 ENDER_CHEST 类型，
+     * 先据此排除掉其余各类容器，以免每次关闭界面都要遍历整张缓存表。
+     */
     public static ImprovedOfflinePlayer getOfflinePlayerViewing(Inventory inventory) {
+        InventoryType type = inventory.getType();
+        if (type != InventoryType.PLAYER && type != InventoryType.ENDER_CHEST) {
+            return null;
+        }
         for (ImprovedOfflinePlayer player : ImprovedOfflinePlayer.offlinePlayers.values()) {
             if (player.inventory == inventory || player.enderchest == inventory) {
                 return player;
