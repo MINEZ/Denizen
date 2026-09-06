@@ -80,6 +80,7 @@ git rebase upstream/dev
 | `PlayerTag.close_dialog` | 机制 | 新增 |
 | `cast` | 命令 | 修改 |
 | `player respawns` | 事件 | 修改 |
+| `PlayerTag.save_data` | 机制 | 新增 |
 | 离线玩家的物品栏编辑 | 行为 | 修复 |
 | `EntityTag` 中仅适用于生物实体的机制 | 机制 | 修复 |
 | `projectile launched` | 事件 | 修复 |
@@ -96,6 +97,8 @@ git rebase upstream/dev
 **重生点。** 上游的 `player respawns` 事件只区分是否为床，重生锚与世界出生点无从分辨。现改为完整暴露服务端提供的信息：`<context.spawn_type>`（bed、anchor 或 world）、`<context.reason>`（death、end_portal 或 plugin），以及在床或锚被破坏时为真的 `<context.is_missing_respawn_block>`，并配有 `spawn_type:` 与 `reason:` 两个开关。旧的 `at bed` 与 `elsewhere` 写法仍可使用，但加载时会给出废弃提示。
 
 **重复施加的药水效果。** 上游的 `cast` 把 Bukkit 返回的 `false` 一律当作失败并报错，而该返回值仅表示效果表未发生改变。目标身上已有同类且等级不低的效果时，这本就是正常结果——已有效果或是继续生效，或是将新效果存为隐藏效果，待其结束后自行接上。现改为区分两者，仅在效果确实无法施加时才报错。
+
+**按需写出玩家数据。** `PlayerTag.save_data` 可立即将玩家数据写入其存档文件。对离线玩家物品栏所作的改动，原本只在数据离开缓存、玩家登录或服务器关闭时才会写出，其间若发生崩溃便会丢失。
 
 ### 修复
 
