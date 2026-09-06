@@ -80,6 +80,7 @@ Usage documentation lives in the meta comments in the source and is published au
 | `PlayerTag.close_dialog` | Mechanism | Added |
 | `cast` | Command | Changed |
 | `player respawns` | Event | Changed |
+| `PlayerTag.save_data` | Mechanism | Added |
 | Offline player inventory editing | Behaviour | Fixed |
 | `EntityTag` living-entity mechanisms | Mechanism | Fixed |
 | `projectile launched` | Event | Fixed |
@@ -96,6 +97,8 @@ This subsystem is derived from [denizen-utilities](https://github.com/isnsest/de
 **Respawn points.** Upstream's `player respawns` event only tells you whether the respawn point was a bed, so respawn anchors are indistinguishable from the world spawn. The event now carries the full information the server provides — `<context.spawn_type>` (bed, anchor or world), `<context.reason>` (death, end_portal or plugin), and `<context.is_missing_respawn_block>` for when a bed or anchor was destroyed — with matching `spawn_type:` and `reason:` switches. The old `at bed` and `elsewhere` forms still work but warn on load.
 
 **Redundant potion effects.** Upstream's `cast` treats a `false` return from Bukkit as a failure and reports an error, but that return only means the effect table did not change. That is the normal outcome whenever the target already has an effect of the same type at an equal or higher amplifier — the existing one either keeps running, or the new one is stored as a hidden effect and takes over once it ends. The command now tells the two apart and only reports an error when the effect genuinely could not be applied.
+
+**Writing player data on demand.** `PlayerTag.save_data` writes a player's data to their save file right away. Edits to an offline player's inventory are otherwise only written out when the data leaves the cache, when the player logs in, or when the server shuts down, which leaves a window where a crash would lose them.
 
 ### Fixes
 
