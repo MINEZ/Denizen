@@ -4062,6 +4062,30 @@ public class PlayerTag implements ObjectTag, Adjustable, EntityFormObject, Flagg
 
         // <--[mechanism]
         // @object PlayerTag
+        // @name save_data
+        // @input None
+        // @description
+        // Immediately writes the player's data to their save file.
+        // For an online player this saves their current state, the same as the server does when they log out.
+        // For an offline player this writes out any changes made to their saved data, including edits made to
+        // their inventory or ender chest, which are otherwise only written when the data leaves the cache,
+        // when the player logs in, or when the server shuts down.
+        // @example
+        // # Gives an offline player an item and writes it out right away.
+        // - inventory set d:<[target].inventory> slot:1 o:<item[diamond]>
+        // - adjust <[target]> save_data
+        // -->
+        if (mechanism.matches("save_data")) {
+            if (isOnline()) {
+                getPlayerEntity().saveData();
+            }
+            else {
+                ImprovedOfflinePlayer.invalidateNow(getUUID());
+            }
+        }
+
+        // <--[mechanism]
+        // @object PlayerTag
         // @name is_op
         // @input ElementTag(Boolean)
         // @description
