@@ -261,6 +261,11 @@ public class PlayerTag implements ObjectTag, Adjustable, EntityFormObject, Flagg
     public ImprovedOfflinePlayer getNBTEditor() {
         ImprovedOfflinePlayer result = ImprovedOfflinePlayer.offlinePlayers.get(uuid);
         if (result == null || (!result.modified && result.timeLastLoaded + Settings.worldPlayerDataMaxCacheTicks < DenizenCore.currentTimeMonotonicMillis)) {
+            // 缓存到期后即将重新读取，此前须先把物品栏一类的改动刷入文件，
+            // 否则那些只存在于 Bukkit 对象中、尚未同步进 NBT 的改动会随旧对象一同丢弃。
+            if (result != null) {
+                ImprovedOfflinePlayer.invalidateNow(uuid);
+            }
             result = NMSHandler.playerHelper.getOfflineData(uuid);
             if (result != null) {
                 ImprovedOfflinePlayer.offlinePlayers.put(uuid, result);
