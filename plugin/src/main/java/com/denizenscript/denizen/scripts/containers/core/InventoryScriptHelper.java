@@ -58,9 +58,31 @@ public class InventoryScriptHelper implements Listener {
         toClearOfflinePlayers.clear();
     }
 
+    /** 取得正在查看该离线玩家数据的缓存项，没有则返回 null。 */
+    public static ImprovedOfflinePlayer getOfflinePlayerViewing(Inventory inventory) {
+        for (ImprovedOfflinePlayer player : ImprovedOfflinePlayer.offlinePlayers.values()) {
+            if (player.inventory == inventory || player.enderchest == inventory) {
+                return player;
+            }
+        }
+        return null;
+    }
+
     @EventHandler
     public void onPlayerLogin(PlayerLoginEvent event) {
-        ImprovedOfflinePlayer.invalidateNow(event.getPlayer().getUniqueId());
+        UUID id = event.getPlayer().getUniqueId();
+        // 玩家一旦上线，此前由其存档数据构造的物品栏便与本人再无关联，
+        // 继续显示只会让查看者误以为改动仍然有效，故先行关闭。
+        ImprovedOfflinePlayer offlinePlayer = ImprovedOfflinePlayer.offlinePlayers.get(id);
+        if (offlinePlayer != null) {
+            for (Player viewer : Bukkit.getOnlinePlayers()) {
+                Inventory openInventory = viewer.getOpenInventory().getTopInventory();
+                if (openInventory == offlinePlayer.inventory || openInventory == offlinePlayer.enderchest) {
+                    viewer.closeInventory();
+                }
+            }
+        }
+        ImprovedOfflinePlayer.invalidateNow(id);
     }
 
     public static HashSet<ClickType> allowedClicks = new HashSet<>(Arrays.asList(ClickType.CONTROL_DROP, ClickType.CREATIVE, ClickType.DROP, ClickType.LEFT,
@@ -111,6 +133,18 @@ public class InventoryScriptHelper implements Listener {
     public void onPlayerCloses(InventoryCloseEvent event) {
         if (isPersonalSpecialInv(event.getInventory()) && isGUI(event.getInventory())) {
             event.getInventory().clear();
+        }
+        ImprovedOfflinePlayer offlinePlayer = getOfflinePlayerViewing(event.getInventory());
+        if (offlinePlayer != null) {
+            // 界面中的改动只落在 Bukkit 对象上，须在此同步进 NBT，
+            // 否则在缓存到期或服务器关闭之前的任何一次保存都不会包含它们。
+            // 写盘交由 markModified 的延时保存完成，与其他离线改动的时机一致。
+            if (offlinePlayer.inventory != null) {
+                offlinePlayer.setInventory(offlinePlayer.inventory);
+            }
+            if (offlinePlayer.enderchest != null) {
+                offlinePlayer.setEnderChest(offlinePlayer.enderchest);
+            }
         }
     }
 }
