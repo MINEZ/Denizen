@@ -80,6 +80,7 @@ git rebase upstream/dev
 | `PlayerTag.close_dialog` | 机制 | 新增 |
 | `cast` | 命令 | 修改 |
 | `player respawns` | 事件 | 修改 |
+| 离线玩家的物品栏编辑 | 行为 | 修复 |
 | `EntityTag` 中仅适用于生物实体的机制 | 机制 | 修复 |
 | `projectile launched` | 事件 | 修复 |
 | `potion effects modified` | 事件 | 修复 |
@@ -98,6 +99,7 @@ git rebase upstream/dev
 
 ### 修复
 
+- **离线玩家的物品栏编辑会被静默丢弃。** 离线玩家的物品栏是依其存档数据另行构造的 Bukkit 对象，其上的改动须经一次显式同步才能回到存档数据中，而缓存到期时并不会执行该同步，于是经由 `inventory open` 所作的改动会在约一小时后消失。现于缓存丢弃之前、以及每次关闭此类界面时执行同步；玩家上线时亦会关闭已打开的界面，因为其背后的数据届时已与本人无关。
 - **仅适用于生物实体的机制** —— `no_damage_duration`、`oxygen`、`gliding` 等十余个机制未经判断便按生物实体取用，对船、矿车、画一类实体使用时会抛出空指针异常，现改为说明是哪个机制用在了什么实体上。`cast` 命令存在同样的缺陷，一并加以防护。
 - **`projectile launched` 事件** —— `<context.shooter>` 在弹射物没有射手时（例如由发射器发射）会抛出空指针异常，现改为返回 null。
 - **`potion effects modified` 事件** —— `<context.effect_type>` 与 `effect` 开关此前使用 Bukkit 的旧式效果名（如 `SLOW`、`FAST_DIGGING`），现改用现代的键名（`slowness`、`haste`），与 Denizen 其余部分保持一致。
