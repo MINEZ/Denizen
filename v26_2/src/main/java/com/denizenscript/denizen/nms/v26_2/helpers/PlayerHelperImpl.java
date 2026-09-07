@@ -69,6 +69,7 @@ import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.Entity;
+import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -79,6 +80,18 @@ import java.util.*;
 import java.util.function.Predicate;
 
 public class PlayerHelperImpl extends PlayerHelper {
+
+    @Override
+    public boolean openFullPlayerInventory(Player viewer, org.bukkit.inventory.PlayerInventory target) {
+        net.minecraft.world.Container targetContainer = ((CraftInventory) target).getInventory();
+        // 玩家物品栏为 41 格，凑足 45 格方能构成五行的箱子界面，多出的 4 格弃置不用。
+        net.minecraft.world.Container padded = new net.minecraft.world.CompoundContainer(targetContainer, new net.minecraft.world.SimpleContainer(45 - targetContainer.getContainerSize()));
+        ServerPlayer nmsViewer = ((CraftPlayer) viewer).getHandle();
+        nmsViewer.openMenu(new net.minecraft.world.SimpleMenuProvider(
+                (id, playerInventory, player) -> new net.minecraft.world.inventory.ChestMenu(net.minecraft.world.inventory.MenuType.GENERIC_9x5, id, playerInventory, padded, 5),
+                net.minecraft.network.chat.Component.literal(target.getHolder() == null ? "Inventory" : target.getHolder().getName())));
+        return true;
+    }
 
     public static final Field ATTACK_COOLDOWN_TICKS = ReflectionHelper.getFields(LivingEntity.class).get("attackStrengthTicker", int.class);
 
