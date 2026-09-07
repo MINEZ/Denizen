@@ -10,7 +10,6 @@ import org.bukkit.*;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.PlayerInventory;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -18,16 +17,6 @@ import java.util.List;
 import java.util.UUID;
 
 public abstract class PlayerHelper {
-
-    /**
-     * 令查看者打开另一名玩家的完整物品栏，含盔甲与副手。
-     * 直接打开玩家物品栏只会显示 36 格，因为容器界面按格数除以 9 取整来定行数，
-     * 41 格因此只得四行，盔甲与副手恰被截去。
-     * 返回 false 表示当前版本未实现，由调用方回落到原有方式。
-     */
-    public boolean openFullPlayerInventory(Player viewer, PlayerInventory target) {
-        return false;
-    }
 
     public abstract void stopSound(Player player, NamespacedKey sound, SoundCategory category); // TODO: remove the category param once 1.19 is the minimum version
 
