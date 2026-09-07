@@ -81,6 +81,7 @@ Usage documentation lives in the meta comments in the source and is published au
 | `cast` | Command | Changed |
 | `player respawns` | Event | Changed |
 | `PlayerTag.save_data` | Mechanism | Added |
+| `inventory open` on a player inventory | Command | Changed |
 | Offline player inventory editing | Behaviour | Fixed |
 | `EntityTag` living-entity mechanisms | Mechanism | Fixed |
 | `projectile launched` | Event | Fixed |
@@ -99,6 +100,8 @@ This subsystem is derived from [denizen-utilities](https://github.com/isnsest/de
 **Redundant potion effects.** Upstream's `cast` treats a `false` return from Bukkit as a failure and reports an error, but that return only means the effect table did not change. That is the normal outcome whenever the target already has an effect of the same type at an equal or higher amplifier — the existing one either keeps running, or the new one is stored as a hidden effect and takes over once it ends. The command now tells the two apart and only reports an error when the effect genuinely could not be applied.
 
 **Writing player data on demand.** `PlayerTag.save_data` writes a player's data to their save file right away. Edits to an offline player's inventory are otherwise only written out when the data leaves the cache, when the player logs in, or when the server shuts down, which leaves a window where a crash would lose them.
+
+**Opening a full player inventory.** A player inventory holds 41 slots, but a container screen takes its row count by dividing the slot count by nine, so opening one showed only the first 36 and cut off the armor and offhand slots. `inventory open` now opens a player inventory through a five row container, leaving all 41 slots reachable. The four spare slots are unused. Requires Paper 26.2; on other versions the previous behaviour is kept.
 
 ### Fixes
 
