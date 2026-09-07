@@ -38,7 +38,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 
@@ -329,12 +328,6 @@ public class InventoryCommand extends AbstractCommand implements Listener {
                     // Also check if the holder is a horse to do special NMS inventory open
                     else if (destination.getIdHolder() instanceof EntityTag entity && entity.getLivingEntity() instanceof AbstractHorse horse) {
                         NMSHandler.entityHelper.openHorseInventory(player.getPlayerEntity(), horse);
-                    }
-                    // A player inventory opened as an ordinary container shows only its first 36 slots,
-                    // so open it through a five row container instead, which leaves room for the armor and offhand slots
-                    else if (destination.getInventory() instanceof PlayerInventory playerInventory
-                            && NMSHandler.playerHelper.openFullPlayerInventory(player.getPlayerEntity(), playerInventory)) {
-                        break;
                     }
                     // Otherwise, open inventory as usual
                     else {
