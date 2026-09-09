@@ -243,6 +243,16 @@ public class PlayerHelperImpl extends PlayerHelper {
         for (PlayerTag player : players) {
             fake.triggerSpawnPacket.accept(player);
         }
+        fake.triggerRemovePlayer = (player) -> {
+            TrackerData removed = trackers.remove(player.getUUID());
+            if (removed == null) {
+                return;
+            }
+            Player bukkitPlayer = player.getPlayerEntity();
+            if (bukkitPlayer != null) {
+                removed.tracker.removePairing(((CraftPlayer) bukkitPlayer).getHandle());
+            }
+        };
         fake.triggerUpdatePacket = () -> {
             for (TrackerData tracker : trackers.values()) {
                 if (tracker.player.isOnline()) {
