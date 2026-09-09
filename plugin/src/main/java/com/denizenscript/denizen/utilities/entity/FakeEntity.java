@@ -14,6 +14,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -68,6 +69,16 @@ public class FakeEntity {
         public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
             scheduleRefresh(new PlayerTag(event.getPlayer()));
         }
+
+        @EventHandler(priority = EventPriority.MONITOR)
+        public void onPlayerQuit(PlayerQuitEvent event) {
+            PlayerTag player = new PlayerTag(event.getPlayer());
+            for (FakeEntity fake : new ArrayList<>(idsToEntities.values())) {
+                if (fake.refreshOnJoin && fake.hasPlayer(player.getUUID())) {
+                    fake.stopTracking(player);
+                }
+            }
+        }
     }
 
     /** 玩家加入或切换世界之际客户端尚未就绪，故延后两 tick 再补发。 */
@@ -93,6 +104,10 @@ public class FakeEntity {
                 continue;
             }
             if (!world.equals(fake.entity.getBukkitEntity().getWorld())) {
+                // 玩家已不在假实体所在的世界，其客户端无从呈现，跟踪就此撤下。
+                if (known) {
+                    fake.stopTracking(player);
+                }
                 continue;
             }
             if (!known) {
@@ -110,6 +125,7 @@ public class FakeEntity {
     public Consumer<PlayerTag> triggerSpawnPacket;
     public Runnable triggerUpdatePacket;
     public Runnable triggerDestroyPacket;
+    public Consumer<PlayerTag> triggerRemovePlayer;
     public UUID overrideUUID;
     /** 是否在观看者重新加入或切换世界后重新建立跟踪，目前仅 fakespawn 生成的假实体需要。 */
     public boolean refreshOnJoin = false;
@@ -177,6 +193,16 @@ public class FakeEntity {
             playersToEntities.put(player.getUUID(), playerEntities);
         }
         playerEntities.byId.put(id, this);
+    }
+
+    /**
+     * 撤下为某位观看者建立的跟踪器，其定时任务随之退出。
+     * 观看者本身仍留在名单中，待其重新加入或回到假实体所在的世界时重新建立跟踪。
+     */
+    public void stopTracking(PlayerTag player) {
+        if (triggerRemovePlayer != null) {
+            triggerRemovePlayer.accept(player);
+        }
     }
 
     public boolean hasPlayer(UUID uuid) {
