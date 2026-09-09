@@ -686,14 +686,12 @@ public class DenizenNetworkManagerImpl extends Connection {
                     return false;
                 }
                 if (packet instanceof ClientboundUpdateAttributesPacket) {
-                    FakeEntity fake = ider == player.getId() ? disguise.fakeToSelf : disguise.toOthers;
-                    if (fake == null) {
-                        return false;
+                    if (ider == player.getId()) {
+                        // 自视伪装：玩家自身的移动预测系于这些属性，原样放行；伪装体并非生物时才丢弃。
+                        return disguise.fakeToSelf != null && !(disguise.fakeToSelf.entity.entity instanceof LivingEntity);
                     }
-                    if (fake.entity.entity instanceof LivingEntity) {
-                        return false;
-                    }
-                    return true; // Non-living don't have attributes
+                    // 伪装体的属性已在建立配对时一并发出，真身的属性包与之编号相同，放行只会将其覆盖。
+                    return disguise.toOthers != null;
                 }
                 antiDuplicate = true;
                 disguise.sendTo(Collections.singletonList(new PlayerTag(player.getBukkitEntity())));
