@@ -22,7 +22,7 @@ public class EntityProfile extends EntityProperty<MapTag> {
     // "body": a texture key such as "minecraft:my_pack/guard", overriding the body texture.
     // "cape": a texture key overriding the cape texture.
     // "elytra": a texture key overriding the elytra texture.
-    // "model": either CLASSIC or SLIM, the arm width of the skin.
+    // "model": the arm width of the skin, either WIDE (called CLASSIC by Bukkit) or SLIM.
     // Giving only a name or a uuid leaves the lookup to the client, so the skin appears a moment later rather than at once.
     // Giving a texture blob or a texture key applies immediately, with no lookup at all.
     // At least one key must be given; there is no input that returns the profile to its default.
@@ -34,6 +34,7 @@ public class EntityProfile extends EntityProperty<MapTag> {
     //
     // @mechanism-example
     // # Wear a texture straight out of a resource pack, with slim arms.
+    // # Note that "body" takes a texture key, while "texture" takes a base64 blob - they are not interchangeable.
     // - adjust <[mannequin]> profile:[body=my_pack:entity/guard;model=SLIM]
     //
     // -->
