@@ -8,6 +8,7 @@ import com.denizenscript.denizen.scripts.containers.core.ItemScriptContainer;
 import com.denizenscript.denizen.utilities.packets.NetworkInterceptHelper;
 import com.denizenscript.denizencore.objects.Mechanism;
 import com.denizenscript.denizencore.objects.core.ElementTag;
+import com.denizenscript.denizencore.objects.core.MapTag;
 import com.denizenscript.denizencore.utilities.ReflectionHelper;
 import com.denizenscript.denizencore.utilities.debugging.Debug;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -101,6 +102,17 @@ public class PaperAPITools {
 
     public void setMannequinPose(Entity entity, Pose pose) {
         ((Mannequin) entity).setPose(pose);
+    }
+
+    // mannequin 的档案在 Spigot 与 Paper 上分属两套互不相通的类型，
+    // 且唯有 Paper 一侧能表达贴图覆盖等新增项，故此处只在 Paper 上实现。
+
+    public MapTag getMannequinProfile(Entity entity) {
+        return null;
+    }
+
+    public void setMannequinProfile(Entity entity, MapTag profile) {
+        throw new UnsupportedOperationException();
     }
 
     public void setPlayerListName(Player player, String name) {
