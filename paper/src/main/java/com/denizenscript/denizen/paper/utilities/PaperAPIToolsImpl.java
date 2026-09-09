@@ -128,6 +128,15 @@ public class PaperAPIToolsImpl extends PaperAPITools {
     }
 
     @Override
+    public void setMannequinPose(Entity entity, Pose pose) {
+        // Paper 未在 Mannequin 上另设 setPose，改由实体通用的接口设定，并标为固定姿势。
+        if (!Mannequin.validPoses().contains(pose)) {
+            throw new IllegalArgumentException("invalid pose for a mannequin: " + pose.name());
+        }
+        entity.setPose(pose, true);
+    }
+
+    @Override
     public void setPlayerListName(Player player, String name) {
         player.playerListName(PaperModule.parseFormattedText(name, ChatColor.WHITE));
     }

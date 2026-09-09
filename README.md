@@ -85,6 +85,9 @@ Usage documentation lives in the meta comments in the source and is published au
 | `attach` | Command | Changed |
 | `EntityTag.hide_description` | Property | Added |
 | `EntityTag.description` | Property | Added |
+| `EntityTag.immovable` | Property | Added |
+| `EntityTag.main_hand` | Property | Added |
+| `EntityTag.pose` | Property | Added |
 | Offline player inventory editing | Behaviour | Fixed |
 | `EntityTag` living-entity mechanisms | Mechanism | Fixed |
 | `projectile launched` | Event | Fixed |
@@ -110,7 +113,7 @@ This subsystem is derived from [denizen-utilities](https://github.com/isnsest/de
 
 **Attaching fake entities.** `attach` drives an attachment by rewriting the movement packets sent for the target entity, which leaves two gaps where fake entities are concerned: the server never sends a player their own movement, so an attachment to yourself is invisible to you, and a fake entity's movement is only ever sent by Denizen in the first place. Fake entities now always sync serverside. For them that carries none of the side effects it has on real entities — they are not in the world, so the sync is just a coordinate update — and `attach <player.fake_entities> to:<player> offset:0,2,0` works without `sync_server`. The sync pushes the movement out as soon as it happens rather than waiting for the fake entity's own tick, which takes one tick off the lag the attached-to player sees. The rest of that lag is the round trip to the server and cannot be removed — other players see no such delay, since they receive the entity and the player over the same path.
 
-**Hiding the mannequin label.** Mannequins show “NPC” where a player's below-name score would go, unless a description is set for them. Vanilla has a `hide_description` field for turning that off, but upstream Denizen has no mannequin support at all, so nothing could reach it — least of all through `disguise ... as:mannequin[...]`, where the disguise entity is built inside Denizen and no command can touch it. `EntityTag.hide_description` exposes it, and `EntityTag.description` sets that line to text of your own — a role, a title, whatever suits — with no input returning it to the default. Both require Minecraft 1.21.9 or newer.
+**Mannequin properties.** Upstream Denizen has no mannequin support at all, so nothing vanilla offers on these entities could be reached from a script — least of all through `disguise ... as:mannequin[...]`, where the disguise entity is built inside Denizen and no command can touch it. Five properties now cover the settings worth having: `description` replaces the line below the name, where a player's below-name score would go, with no input returning it to the default; `hide_description` drops that line entirely, taking away the “NPC” shown there by default; `immovable` stops the entity being pushed; `main_hand` swaps which hand holds the main item; and `pose` sets the pose it is held in. All require Minecraft 1.21.9 or newer. Spigot and Paper expose several of these through incompatible interfaces, so they go through Denizen's existing split between the two.
 
 ### Fixes
 
