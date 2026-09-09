@@ -101,6 +101,7 @@ public class FakeSpawnCommand extends AbstractCommand {
         }
         if (!cancel) {
             FakeEntity created = FakeEntity.showFakeEntityTo(players, entity, location, duration, vehicle);
+            created.refreshOnJoin = true;
             scriptEntry.saveObject("faked_entity", created.entity);
             return;
         }

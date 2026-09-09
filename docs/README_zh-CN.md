@@ -85,6 +85,7 @@ git rebase upstream/dev
 | `EntityTag` 中仅适用于生物实体的机制 | 机制 | 修复 |
 | `projectile launched` | 事件 | 修复 |
 | `potion effects modified` | 事件 | 修复 |
+| 重新加入后的假实体跟踪 | 行为 | 修复 |
 
 **熔炼配方标签。** 上游只提供了按产物查找配方的能力。想按输入反查，只能遍历 `server.recipe_ids` 再用 `server.recipe_items` 的文本做匹配，而后者对多材料输入只会暴露第一个材料——原版玻璃配方同时接受沙子与红沙，红沙因此必然漏判。这组标签在首次查询时构建材料到配方的索引，是否匹配交由原版的 `RecipeChoice#test` 判断，多材料输入与精确匹配输入都能正确处理。
 
@@ -106,6 +107,7 @@ git rebase upstream/dev
 - **仅适用于生物实体的机制** —— `no_damage_duration`、`oxygen`、`gliding` 等十余个机制未经判断便按生物实体取用，对船、矿车、画一类实体使用时会抛出空指针异常，现改为说明是哪个机制用在了什么实体上。`cast` 命令存在同样的缺陷，一并加以防护。
 - **`projectile launched` 事件** —— `<context.shooter>` 在弹射物没有射手时（例如由发射器发射）会抛出空指针异常，现改为返回 null。
 - **`potion effects modified` 事件** —— `<context.effect_type>` 与 `effect` 开关此前使用 Bukkit 的旧式效果名（如 `SLOW`、`FAST_DIGGING`），现改用现代的键名（`slowness`、`haste`），与 Denizen 其余部分保持一致。
+- **假实体在观看者重新加入后不再移动。** 假实体为每个观看者单独建立跟踪器，而跟踪器绑定于建立时的那条连接。玩家断线后连接即告作废，重新加入时更新仍写往旧连接，实体便停在原处不动。现改为在观看者重新加入服务器或切换世界时重建跟踪器。
 
 ## 构建
 
