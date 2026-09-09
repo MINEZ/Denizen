@@ -83,6 +83,7 @@ git rebase upstream/dev
 | `PlayerTag.save_data` | 机制 | 新增 |
 | `fakespawn` | 命令 | 修改 |
 | `attach` | 命令 | 修改 |
+| `EntityTag.hide_description` | 属性 | 新增 |
 | 离线玩家的物品栏编辑 | 行为 | 修复 |
 | `EntityTag` 中仅适用于生物实体的机制 | 机制 | 修复 |
 | `projectile launched` | 事件 | 修复 |
@@ -107,6 +108,8 @@ git rebase upstream/dev
 **假实体的默认行为。** 上游的 `fakespawn` 在未给出 `players:` 时只展示给关联玩家。现改为默认展示给假实体所在世界的每一位玩家，并跟随人员变动：只要假实体尚在，其后加入服务器或进入该世界的玩家同样会看到。若要沿用旧行为，显式写明 `players:<player>` 即可。观看者一旦离线或离开该世界便暂停跟踪，待其回来再行恢复，其间本就无从呈现。`duration:` 的默认也一并改了：此前不写表示十秒，现在表示一直保留到被取消或服务器停止。
 
 **假实体的附着。** `attach` 靠改写目标实体的移动数据包来带动被附着者，这对假实体留下了两处缺口：服务端从不向玩家发送其自身的移动，附着到自己身上便自己看不见；而假实体的移动本就只由 Denizen 自行发出。现改为假实体一律走服务端同步。对它们而言这并没有作用于真实实体时的那些副作用——它们不在世界之中，所谓同步不过是改一下坐标——`attach <player.fake_entities> to:<player> offset:0,2,0` 因此无需再写 `sync_server`。同步之后会立即发出移动，而非等假实体自己的定时任务轮转，被附着的玩家本人所见的延迟因此少去一个 tick。剩下的延迟是往返服务端的网络耗时，无从消除；旁人则看不出这份延迟，因为假实体与玩家本体经的是同一条路。
+
+**隐去 mannequin 的标识文本。** `mannequin` 实体会在玩家名称下方本应显示记分板分数之处显示 “NPC”，除非另行设定了描述文本。原版为此备有 `hide_description` 字段，但上游 Denizen 完全未涉及此类实体，该字段便无从触及——经 `disguise ... as:mannequin[...]` 时尤其如此，伪装体由 Denizen 内部创建，任何命令都够不着。现以 `EntityTag.hide_description` 属性将其暴露。需要 Minecraft 1.21.9 及以上版本。
 
 ### 修复
 
