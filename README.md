@@ -102,7 +102,7 @@ This subsystem is derived from [denizen-utilities](https://github.com/isnsest/de
 
 **Writing player data on demand.** `PlayerTag.save_data` writes a player's data to their save file right away. Edits to an offline player's inventory are otherwise only written out when the data leaves the cache, when the player logs in, or when the server shuts down, which leaves a window where a crash would lose them.
 
-**Fake entities for everyone.** Upstream's `fakespawn` shows the entity to the linked player alone when no `players:` list is given. It now defaults to every player in the world the entity is spawned in, and keeps up with the roster: a player who joins the server, or who enters that world, is shown the entity as well, for as long as it is around. Pass `players:<player>` for the old behaviour.
+**Fake entities for everyone.** Upstream's `fakespawn` shows the entity to the linked player alone when no `players:` list is given. It now defaults to every player in the world the entity is spawned in, and keeps up with the roster: a player who joins the server, or who enters that world, is shown the entity as well, for as long as it is around. Pass `players:<player>` for the old behaviour. Viewers who disconnect or leave that world are dropped from tracking until they return, since there is nothing to show them in the meantime.
 
 ### Fixes
 
