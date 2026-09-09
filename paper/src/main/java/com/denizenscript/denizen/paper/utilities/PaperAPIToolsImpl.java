@@ -93,6 +93,40 @@ public class PaperAPIToolsImpl extends PaperAPITools {
         return customName != null ? FormattedTextHelper.parseJson(PaperModule.componentToJson(customName)) : null;
     }
 
+    // Paper 只保留描述本身，以空值表示不显示，另备一个静态方法取默认的 “NPC”，
+    // 与 Spigot 那套“描述加开关”的接口对不上，故在此换算。
+
+    @Override
+    public String getMannequinDescription(Entity entity) {
+        Component description = ((Mannequin) entity).getDescription();
+        if (description == null || description.equals(Mannequin.defaultDescription())) {
+            return null;
+        }
+        return PaperModule.stringifyComponent(description);
+    }
+
+    @Override
+    public void setMannequinDescription(Entity entity, String description) {
+        ((Mannequin) entity).setDescription(description == null ? Mannequin.defaultDescription() : PaperModule.parseFormattedText(description, ChatColor.WHITE));
+    }
+
+    @Override
+    public boolean isMannequinDescriptionHidden(Entity entity) {
+        return ((Mannequin) entity).getDescription() == null;
+    }
+
+    @Override
+    public void setMannequinDescriptionHidden(Entity entity, boolean hide) {
+        Mannequin mannequin = (Mannequin) entity;
+        if (hide) {
+            mannequin.setDescription(null);
+        }
+        else if (mannequin.getDescription() == null) {
+            // 已有自定的描述时不必改动，取消隐藏只需把空值换回默认。
+            mannequin.setDescription(Mannequin.defaultDescription());
+        }
+    }
+
     @Override
     public void setPlayerListName(Player player, String name) {
         player.playerListName(PaperModule.parseFormattedText(name, ChatColor.WHITE));
