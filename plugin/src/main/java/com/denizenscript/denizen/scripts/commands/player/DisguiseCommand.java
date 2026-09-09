@@ -145,6 +145,19 @@ public class DisguiseCommand extends AbstractCommand {
             NMSHandler.entityHelper.look(fakeToSelf.entity.getBukkitEntity(), position.getYaw() + yawOff, position.getPitch());
         }
 
+        /** 将伪装体的位置对齐到真身，使随后重发的生成包落在正确的地方。 */
+        public void syncToOthersPosition() {
+            if (toOthers == null || !toOthers.entity.isFakeValid) {
+                return;
+            }
+            Location position = entity.getLocation();
+            if (position == null) {
+                return;
+            }
+            NMSHandler.entityHelper.snapPositionTo(toOthers.entity.getBukkitEntity(), position.toVector());
+            NMSHandler.entityHelper.look(toOthers.entity.getBukkitEntity(), position.getYaw(), position.getPitch());
+        }
+
         public void startFake(PlayerTag player) {
             if (fakeToSelf != null) {
                 stopFake(player);
@@ -218,6 +231,7 @@ public class DisguiseCommand extends AbstractCommand {
                 FakeEntity.idsToEntities.put(toOthers.overrideUUID, toOthers);
             }
             else {
+                syncToOthersPosition();
                 for (PlayerTag player : players) {
                     toOthers.triggerSpawnPacket.accept(player);
                 }

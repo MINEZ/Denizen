@@ -775,6 +775,8 @@ public class DenizenNetworkManagerImpl extends Connection {
                     oldManager.send(pNew, genericfuturelistener);
                     return true;
                 }
+                // 实体编号与真身相同，移动数据包交由客户端直接作用于伪装体即可。
+                return false;
             }
             else if (packet instanceof ClientboundMoveEntityPacket) {
                 if (disguise.as.getBukkitEntityType() == EntityType.ENDER_DRAGON) {
@@ -792,6 +794,8 @@ public class DenizenNetworkManagerImpl extends Connection {
                     }
                     return false;
                 }
+                // 实体编号与真身相同，移动数据包交由客户端直接作用于伪装体即可。
+                return false;
             }
             antiDuplicate = true;
             disguise.sendTo(List.of(new PlayerTag(player.getUUID())));

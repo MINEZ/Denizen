@@ -119,7 +119,8 @@ public class DisguisePacketHandlers {
                     teleportEntityPacket.onGround()
             );
         }
-        return sendDisguiseForPacket(networkManager, teleportEntityPacket, disguise);
+        // 实体编号与真身相同，移动数据包交由客户端直接作用于伪装体即可。
+        return teleportEntityPacket;
     }
 
 
@@ -132,7 +133,8 @@ public class DisguisePacketHandlers {
                     rotPacket.isOnGround()
             );
         }
-        return sendDisguiseForPacket(networkManager, rotPacket, disguise);
+        // 实体编号与真身相同，移动数据包交由客户端直接作用于伪装体即可。
+        return rotPacket;
     }
 
 
@@ -148,7 +150,8 @@ public class DisguisePacketHandlers {
                     posRotPacket.isOnGround()
             );
         }
-        return sendDisguiseForPacket(networkManager, posRotPacket, disguise);
+        // 实体编号与真身相同，移动数据包交由客户端直接作用于伪装体即可。
+        return posRotPacket;
     }
 
     public static <T extends Packet<ClientGamePacketListener>> T sendDisguiseForPacket(DenizenNetworkManagerImpl networkManager, T packet, DisguiseCommand.TrackedDisguise disguise) {

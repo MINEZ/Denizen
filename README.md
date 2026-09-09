@@ -87,6 +87,7 @@ Usage documentation lives in the meta comments in the source and is published au
 | `projectile launched` | Event | Fixed |
 | `potion effects modified` | Event | Fixed |
 | Fake entity tracking after a rejoin | Behaviour | Fixed |
+| Disguise movement as seen by others | Behaviour | Fixed |
 
 **Cooking recipe tags.** Upstream only offers recipe lookup by result. Looking one up by input meant iterating `server.recipe_ids` and matching against the text of `server.recipe_items`, which exposes just the first material of a multi-material input — the vanilla glass recipe accepts both sand and red sand, so red sand was always missed. These tags build a material-to-recipe index on first use and let vanilla's own `RecipeChoice#test` decide matches, so multi-material and exact-match inputs both work.
 
@@ -111,6 +112,7 @@ This subsystem is derived from [denizen-utilities](https://github.com/isnsest/de
 - **`projectile launched` event** — `<context.shooter>` threw a null pointer exception when the projectile had no shooter, such as one fired by a dispenser. It now returns null.
 - **`potion effects modified` event** — `<context.effect_type>` and the `effect` switch used Bukkit's legacy effect names such as `SLOW` and `FAST_DIGGING`. They now use the modern keys, `slowness` and `haste`, matching the rest of Denizen.
 - **Fake entities stopped moving once a viewer rejoined.** Every viewer of a fake entity gets a tracker of their own, bound to the connection it was built on. That connection does not survive a disconnect, so after the player came back the updates were still being written to the dead one and the entity sat wherever it had been left. Trackers are now rebuilt when a viewer rejoins the server or changes worlds.
+- **Disguised entities stood still for everyone but themselves.** From 1.19 onward the disguise handler intercepted the movement and teleport packets of a disguised entity and, for anything other than an ender dragon, dropped them in favour of re-sending the disguise. The re-sent spawn carries the position the disguise entity was created at, which is never updated, so the disguise stayed wherever it started. Movement packets now pass through untouched — the disguise shares the real entity's id, so the client applies them to it — and the disguise entity is moved into place before a spawn is re-sent, so viewers who come into range see it where it belongs.
 
 ## Building
 
