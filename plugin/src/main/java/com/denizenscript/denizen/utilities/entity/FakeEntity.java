@@ -7,6 +7,13 @@ import com.denizenscript.denizen.objects.LocationTag;
 import com.denizenscript.denizen.objects.PlayerTag;
 import com.denizenscript.denizen.utilities.packets.NetworkInterceptHelper;
 import com.denizenscript.denizencore.objects.core.DurationTag;
+import org.bukkit.Bukkit;
+import org.bukkit.World;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -35,6 +42,62 @@ public class FakeEntity {
         return map.byId.get(id);
     }
 
+    public static boolean refreshListenersRegistered = false;
+
+    /**
+     * 假实体依赖为每个观看者单独建立的跟踪器，而跟踪器绑定于建立时的那条连接。
+     * 玩家重新加入或切换世界后，其客户端不再持有这些实体，原先的连接也已作废，
+     * 须重新建立跟踪，否则假实体只会停在原处不再更新。
+     */
+    public static void enableRefreshListeners() {
+        if (refreshListenersRegistered) {
+            return;
+        }
+        refreshListenersRegistered = true;
+        Bukkit.getPluginManager().registerEvents(new RefreshListener(), Denizen.getInstance());
+    }
+
+    public static class RefreshListener implements Listener {
+
+        @EventHandler(priority = EventPriority.MONITOR)
+        public void onPlayerJoin(PlayerJoinEvent event) {
+            scheduleRefresh(new PlayerTag(event.getPlayer()));
+        }
+
+        @EventHandler(priority = EventPriority.MONITOR)
+        public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
+            scheduleRefresh(new PlayerTag(event.getPlayer()));
+        }
+    }
+
+    /** 玩家加入或切换世界之际客户端尚未就绪，故延后两 tick 再补发。 */
+    public static void scheduleRefresh(PlayerTag player) {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (player.isOnline()) {
+                    refreshFor(player);
+                }
+            }
+        }.runTaskLater(Denizen.getInstance(), 2);
+    }
+
+    public static void refreshFor(PlayerTag player) {
+        World world = player.getPlayerEntity().getWorld();
+        for (FakeEntity fake : new ArrayList<>(idsToEntities.values())) {
+            if (!fake.refreshOnJoin || fake.triggerSpawnPacket == null || fake.entity == null || !fake.entity.isFakeValid) {
+                continue;
+            }
+            if (!fake.hasPlayer(player.getUUID())) {
+                continue;
+            }
+            if (!world.equals(fake.entity.getBukkitEntity().getWorld())) {
+                continue;
+            }
+            fake.triggerSpawnPacket.accept(player);
+        }
+    }
+
     public List<PlayerTag> players;
     public int id;
     public EntityTag entity;
@@ -44,6 +107,8 @@ public class FakeEntity {
     public Runnable triggerUpdatePacket;
     public Runnable triggerDestroyPacket;
     public UUID overrideUUID;
+    /** 是否在观看者重新加入或切换世界后重新建立跟踪，目前仅 fakespawn 生成的假实体需要。 */
+    public boolean refreshOnJoin = false;
 
     public FakeEntity(List<PlayerTag> player, LocationTag location, int id) {
         this.players = player;
@@ -53,6 +118,7 @@ public class FakeEntity {
 
     public static FakeEntity showFakeEntityTo(List<PlayerTag> players, EntityTag typeToSpawn, LocationTag location, DurationTag duration, EntityTag vehicle) {
         NetworkInterceptHelper.enable();
+        enableRefreshListeners();
         FakeEntity fakeEntity = NMSHandler.playerHelper.sendEntitySpawn(players, typeToSpawn.getEntityType(), location, typeToSpawn.mechanisms == null ? null : new ArrayList<>(typeToSpawn.mechanisms), -1, null, true);
         if (vehicle != null) {
             NMSHandler.playerHelper.addFakePassenger(players, vehicle.getBukkitEntity(), fakeEntity);
@@ -92,6 +158,15 @@ public class FakeEntity {
             mapping.remove(this);
         }
         entity.isFakeValid = false;
+    }
+
+    public boolean hasPlayer(UUID uuid) {
+        for (PlayerTag player : players) {
+            if (uuid.equals(player.getUUID())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void updateEntity(EntityTag entity, DurationTag duration) {
