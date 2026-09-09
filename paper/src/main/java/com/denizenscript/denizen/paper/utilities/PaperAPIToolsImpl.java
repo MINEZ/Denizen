@@ -14,15 +14,18 @@ import com.denizenscript.denizen.utilities.PaperAPITools;
 import com.denizenscript.denizencore.DenizenCore;
 import com.denizenscript.denizencore.objects.Mechanism;
 import com.denizenscript.denizencore.objects.core.ElementTag;
+import com.denizenscript.denizencore.objects.core.MapTag;
 import com.denizenscript.denizencore.tags.TagContext;
 import com.denizenscript.denizencore.utilities.CoreUtilities;
 import com.denizenscript.denizencore.utilities.ReflectionHelper;
 import com.denizenscript.denizencore.utilities.debugging.Debug;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;
+import io.papermc.paper.datacomponent.item.ResolvableProfile;
 import io.papermc.paper.entity.TeleportFlag;
 import io.papermc.paper.potion.PotionMix;
 import io.papermc.paper.world.WeatheringCopperState;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.md_5.bungee.api.ChatColor;
@@ -40,6 +43,7 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionBrewer;
+import org.bukkit.profile.PlayerTextures;
 import org.bukkit.scoreboard.Team;
 import org.bukkit.util.Consumer;
 
@@ -134,6 +138,91 @@ public class PaperAPIToolsImpl extends PaperAPITools {
             throw new IllegalArgumentException("invalid pose for a mannequin: " + pose.name());
         }
         entity.setPose(pose, true);
+    }
+
+    @Override
+    public MapTag getMannequinProfile(Entity entity) {
+        ResolvableProfile profile = ((Mannequin) entity).getProfile();
+        if (profile == null) {
+            return null;
+        }
+        MapTag result = new MapTag();
+        if (profile.name() != null) {
+            result.putObject("name", new ElementTag(profile.name(), true));
+        }
+        if (profile.uuid() != null) {
+            result.putObject("uuid", new ElementTag(profile.uuid().toString()));
+        }
+        for (ProfileProperty property : profile.properties()) {
+            if (property.getName().equals("textures")) {
+                result.putObject("texture", new ElementTag(property.getValue(), true));
+                if (property.getSignature() != null) {
+                    result.putObject("texture_signature", new ElementTag(property.getSignature(), true));
+                }
+            }
+        }
+        ResolvableProfile.SkinPatch patch = profile.skinPatch();
+        if (patch != null) {
+            if (patch.body() != null) {
+                result.putObject("body", new ElementTag(patch.body().asString()));
+            }
+            if (patch.cape() != null) {
+                result.putObject("cape", new ElementTag(patch.cape().asString()));
+            }
+            if (patch.elytra() != null) {
+                result.putObject("elytra", new ElementTag(patch.elytra().asString()));
+            }
+            if (patch.model() != null) {
+                result.putObject("model", new ElementTag(patch.model()));
+            }
+        }
+        return result.map.isEmpty() ? null : result;
+    }
+
+    @Override
+    public void setMannequinProfile(Entity entity, MapTag profile) {
+        if (profile == null || profile.map.isEmpty()) {
+            throw new IllegalArgumentException("a profile needs at least one of name, uuid, texture, body, cape, elytra, or model");
+        }
+        ResolvableProfile.Builder builder = ResolvableProfile.resolvableProfile();
+        ElementTag name = profile.getElement("name");
+        if (name != null) {
+            builder.name(name.asString());
+        }
+        ElementTag uuid = profile.getElement("uuid");
+        if (uuid != null) {
+            builder.uuid(UUID.fromString(uuid.asString()));
+        }
+        ElementTag texture = profile.getElement("texture");
+        if (texture != null) {
+            ElementTag signature = profile.getElement("texture_signature");
+            builder.addProperty(new ProfileProperty("textures", texture.asString(), signature == null ? null : signature.asString()));
+        }
+        final ElementTag body = profile.getElement("body");
+        final ElementTag cape = profile.getElement("cape");
+        final ElementTag elytra = profile.getElement("elytra");
+        final ElementTag model = profile.getElement("model");
+        if (body != null || cape != null || elytra != null || model != null) {
+            builder.skinPatch((patch) -> {
+                if (body != null) {
+                    patch.body(Key.key(body.asString()));
+                }
+                if (cape != null) {
+                    patch.cape(Key.key(cape.asString()));
+                }
+                if (elytra != null) {
+                    patch.elytra(Key.key(elytra.asString()));
+                }
+                if (model != null) {
+                    PlayerTextures.SkinModel skinModel = model.asEnum(PlayerTextures.SkinModel.class);
+                    if (skinModel == null) {
+                        throw new IllegalArgumentException("'" + model + "' is not a valid skin model, use CLASSIC or SLIM");
+                    }
+                    patch.model(skinModel);
+                }
+            });
+        }
+        ((Mannequin) entity).setProfile(builder.build());
     }
 
     @Override
