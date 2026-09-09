@@ -118,7 +118,8 @@ public class DisguisePacketHandlers {
             TELEPORT_PACKET_YAW.setByte(pNew, EntityAttachmentHelper.adaptedCompressedAngle(teleportEntityPacket.getyRot(), 180));
             return pNew;
         }
-        return sendDisguiseForPacket(networkManager, teleportEntityPacket, disguise);
+        // 实体编号与真身相同，移动数据包交由客户端直接作用于伪装体即可。
+        return teleportEntityPacket;
     }
 
 
@@ -126,7 +127,8 @@ public class DisguisePacketHandlers {
         if (disguise.as.getBukkitEntityType() == EntityType.ENDER_DRAGON) {
             return new ClientboundMoveEntityPacket.Rot(disguise.entity.getBukkitEntity().getEntityId(), EntityAttachmentHelper.adaptedCompressedAngle(rotPacket.getyRot(), 180), rotPacket.getxRot(), rotPacket.isOnGround());
         }
-        return sendDisguiseForPacket(networkManager, rotPacket, disguise);
+        // 实体编号与真身相同，移动数据包交由客户端直接作用于伪装体即可。
+        return rotPacket;
     }
 
 
@@ -134,7 +136,8 @@ public class DisguisePacketHandlers {
         if (disguise.as.getBukkitEntityType() == EntityType.ENDER_DRAGON) {
             return new ClientboundMoveEntityPacket.PosRot(disguise.entity.getBukkitEntity().getEntityId(), posRotPacket.getXa(), posRotPacket.getYa(), posRotPacket.getZa(), EntityAttachmentHelper.adaptedCompressedAngle(posRotPacket.getyRot(), 180), posRotPacket.getxRot(), posRotPacket.isOnGround());
         }
-        return sendDisguiseForPacket(networkManager, posRotPacket, disguise);
+        // 实体编号与真身相同，移动数据包交由客户端直接作用于伪装体即可。
+        return posRotPacket;
     }
 
     public static <T extends Packet<ClientGamePacketListener>> T sendDisguiseForPacket(DenizenNetworkManagerImpl networkManager, T packet, DisguiseCommand.TrackedDisguise disguise) {
