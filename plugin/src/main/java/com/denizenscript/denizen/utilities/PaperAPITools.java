@@ -99,6 +99,10 @@ public class PaperAPITools {
         ((Mannequin) entity).setHideDescription(hide);
     }
 
+    public void setMannequinPose(Entity entity, Pose pose) {
+        ((Mannequin) entity).setPose(pose);
+    }
+
     public void setPlayerListName(Player player, String name) {
         player.setPlayerListName(name);
     }
