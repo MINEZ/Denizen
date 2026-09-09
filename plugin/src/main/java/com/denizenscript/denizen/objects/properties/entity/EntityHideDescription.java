@@ -1,6 +1,7 @@
 package com.denizenscript.denizen.objects.properties.entity;
 
 import com.denizenscript.denizen.objects.EntityTag;
+import com.denizenscript.denizen.utilities.PaperAPITools;
 import com.denizenscript.denizencore.objects.Mechanism;
 import com.denizenscript.denizencore.objects.core.ElementTag;
 import org.bukkit.entity.Mannequin;
@@ -23,7 +24,7 @@ public class EntityHideDescription extends EntityProperty<ElementTag> {
 
     @Override
     public ElementTag getPropertyValue() {
-        return new ElementTag(as(Mannequin.class).isHideDescription());
+        return new ElementTag(PaperAPITools.instance.isMannequinDescriptionHidden(getEntity()));
     }
 
     @Override
@@ -36,7 +37,7 @@ public class EntityHideDescription extends EntityProperty<ElementTag> {
         if (!mechanism.requireBoolean()) {
             return;
         }
-        as(Mannequin.class).setHideDescription(value.asBoolean());
+        PaperAPITools.instance.setMannequinDescriptionHidden(getEntity(), value.asBoolean());
     }
 
     @Override
