@@ -70,6 +70,9 @@ public class PropertyRegistry {
         if (NMSHandler.getVersion().isAtLeast(NMSVersion.v1_19)) {
             PropertyParser.registerProperty(EntityDefaultBackground.class, EntityTag.class);
         }
+        if (NMSHandler.getVersion().isAtLeast(NMSVersion.v1_21)) {
+            PropertyParser.registerProperty(EntityDescription.class, EntityTag.class);
+        }
         PropertyParser.registerProperty(EntityDirection.class, EntityTag.class);
         PropertyParser.registerProperty(EntityDisabledSlots.class, EntityTag.class);
         if (NMSHandler.getVersion().isAtLeast(NMSVersion.v1_19)) {
