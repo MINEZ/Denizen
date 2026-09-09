@@ -88,11 +88,15 @@ public class FakeEntity {
             if (!fake.refreshOnJoin || fake.triggerSpawnPacket == null || fake.entity == null || !fake.entity.isFakeValid) {
                 continue;
             }
-            if (!fake.hasPlayer(player.getUUID())) {
+            boolean known = fake.hasPlayer(player.getUUID());
+            if (!known && !fake.forAllPlayers) {
                 continue;
             }
             if (!world.equals(fake.entity.getBukkitEntity().getWorld())) {
                 continue;
+            }
+            if (!known) {
+                fake.addPlayer(player);
             }
             fake.triggerSpawnPacket.accept(player);
         }
@@ -109,9 +113,12 @@ public class FakeEntity {
     public UUID overrideUUID;
     /** 是否在观看者重新加入或切换世界后重新建立跟踪，目前仅 fakespawn 生成的假实体需要。 */
     public boolean refreshOnJoin = false;
+    /** 是否展示给所在世界的每一位玩家，包括其后才加入或进入该世界的玩家。 */
+    public boolean forAllPlayers = false;
 
     public FakeEntity(List<PlayerTag> player, LocationTag location, int id) {
-        this.players = player;
+        // 观看者可在其后增补，故此处另存一份可变的列表。
+        this.players = new ArrayList<>(player);
         this.location = location;
         this.id = id;
     }
@@ -155,9 +162,21 @@ public class FakeEntity {
         }
         for (PlayerTag player : players) {
             FakeEntity.FakeEntityMap mapping = playersToEntities.get(player.getUUID());
-            mapping.remove(this);
+            if (mapping != null) {
+                mapping.remove(this);
+            }
         }
         entity.isFakeValid = false;
+    }
+
+    public void addPlayer(PlayerTag player) {
+        players.add(player);
+        FakeEntityMap playerEntities = playersToEntities.get(player.getUUID());
+        if (playerEntities == null) {
+            playerEntities = new FakeEntityMap();
+            playersToEntities.put(player.getUUID(), playerEntities);
+        }
+        playerEntities.byId.put(id, this);
     }
 
     public boolean hasPlayer(UUID uuid) {
