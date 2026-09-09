@@ -82,6 +82,7 @@ Usage documentation lives in the meta comments in the source and is published au
 | `player respawns` | Event | Changed |
 | `PlayerTag.save_data` | Mechanism | Added |
 | `fakespawn` | Command | Changed |
+| `attach` | Command | Changed |
 | Offline player inventory editing | Behaviour | Fixed |
 | `EntityTag` living-entity mechanisms | Mechanism | Fixed |
 | `projectile launched` | Event | Fixed |
@@ -104,6 +105,8 @@ This subsystem is derived from [denizen-utilities](https://github.com/isnsest/de
 **Writing player data on demand.** `PlayerTag.save_data` writes a player's data to their save file right away. Edits to an offline player's inventory are otherwise only written out when the data leaves the cache, when the player logs in, or when the server shuts down, which leaves a window where a crash would lose them.
 
 **Fake entity defaults.** Upstream's `fakespawn` shows the entity to the linked player alone when no `players:` list is given. It now defaults to every player in the world the entity is spawned in, and keeps up with the roster: a player who joins the server, or who enters that world, is shown the entity as well, for as long as it is around. Pass `players:<player>` for the old behaviour. Viewers who disconnect or leave that world are dropped from tracking until they return, since there is nothing to show them in the meantime. The `duration:` default changed as well: leaving it out used to mean ten seconds, and now means the entity stays until it is cancelled or the server stops.
+
+**Attaching fake entities.** `attach` drives an attachment by rewriting the movement packets sent for the target entity, which leaves two gaps where fake entities are concerned: the server never sends a player their own movement, so an attachment to yourself is invisible to you, and a fake entity's movement is only ever sent by Denizen in the first place. Fake entities now always sync serverside. For them that carries none of the side effects it has on real entities — they are not in the world, so the sync is just a coordinate update — and `attach <player.fake_entities> to:<player> offset:0,2,0` works without `sync_server`.
 
 ### Fixes
 
