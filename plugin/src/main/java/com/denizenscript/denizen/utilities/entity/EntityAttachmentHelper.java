@@ -61,6 +61,15 @@ public class EntityAttachmentHelper {
                 goal.setPitch(attached.getLocation().getPitch());
             }
             attached.teleport(goal);
+            // 假实体的移动只由 Denizen 自行发出，而发包的定时任务与此处同在一 tick 内轮转，
+            // 且注册在先，轮到它时这一轮的同步尚未发生，改动便要多压一个 tick 才发得出去。
+            // 故在此立刻发一次，被附着者本人所见的延迟可少去一个 tick。
+            if (attached.isFake) {
+                FakeEntity fake = FakeEntity.idsToEntities.get(attached.getUUID());
+                if (fake != null && fake.triggerUpdatePacket != null) {
+                    fake.triggerUpdatePacket.run();
+                }
+            }
         }
 
         public void startTask() {
