@@ -81,6 +81,7 @@ Usage documentation lives in the meta comments in the source and is published au
 | `cast` | Command | Changed |
 | `player respawns` | Event | Changed |
 | `PlayerTag.save_data` | Mechanism | Added |
+| `fakespawn` | Command | Changed |
 | Offline player inventory editing | Behaviour | Fixed |
 | `EntityTag` living-entity mechanisms | Mechanism | Fixed |
 | `projectile launched` | Event | Fixed |
@@ -100,6 +101,8 @@ This subsystem is derived from [denizen-utilities](https://github.com/isnsest/de
 **Redundant potion effects.** Upstream's `cast` treats a `false` return from Bukkit as a failure and reports an error, but that return only means the effect table did not change. That is the normal outcome whenever the target already has an effect of the same type at an equal or higher amplifier — the existing one either keeps running, or the new one is stored as a hidden effect and takes over once it ends. The command now tells the two apart and only reports an error when the effect genuinely could not be applied.
 
 **Writing player data on demand.** `PlayerTag.save_data` writes a player's data to their save file right away. Edits to an offline player's inventory are otherwise only written out when the data leaves the cache, when the player logs in, or when the server shuts down, which leaves a window where a crash would lose them.
+
+**Fake entities for everyone.** Upstream's `fakespawn` shows the entity to the linked player alone when no `players:` list is given. It now defaults to every player in the world the entity is spawned in, and keeps up with the roster: a player who joins the server, or who enters that world, is shown the entity as well, for as long as it is around. Pass `players:<player>` for the old behaviour.
 
 ### Fixes
 
