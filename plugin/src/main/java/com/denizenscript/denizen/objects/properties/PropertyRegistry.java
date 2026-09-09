@@ -113,6 +113,7 @@ public class PropertyRegistry {
             PropertyParser.registerProperty(EntityImmovable.class, EntityTag.class);
             PropertyParser.registerProperty(EntityMainHand.class, EntityTag.class);
             PropertyParser.registerProperty(EntityMannequinPose.class, EntityTag.class);
+            PropertyParser.registerProperty(EntityProfile.class, EntityTag.class);
         }
         PropertyParser.registerProperty(EntityImmune.class, EntityTag.class);
         if (NMSHandler.getVersion().isAtLeast(NMSVersion.v1_19)) {
