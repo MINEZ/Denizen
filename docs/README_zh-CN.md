@@ -88,6 +88,7 @@ git rebase upstream/dev
 | `EntityTag.immovable` | 属性 | 新增 |
 | `EntityTag.main_hand` | 属性 | 新增 |
 | `EntityTag.pose` | 属性 | 新增 |
+| `EntityTag.skin_layers` | 标签 / 机制 | 修改 |
 | 离线玩家的物品栏编辑 | 行为 | 修复 |
 | `EntityTag` 中仅适用于生物实体的机制 | 机制 | 修复 |
 | `projectile launched` | 事件 | 修复 |
@@ -113,7 +114,7 @@ git rebase upstream/dev
 
 **假实体的附着。** `attach` 靠改写目标实体的移动数据包来带动被附着者，这对假实体留下了两处缺口：服务端从不向玩家发送其自身的移动，附着到自己身上便自己看不见；而假实体的移动本就只由 Denizen 自行发出。现改为假实体一律走服务端同步。对它们而言这并没有作用于真实实体时的那些副作用——它们不在世界之中，所谓同步不过是改一下坐标——`attach <player.fake_entities> to:<player> offset:0,2,0` 因此无需再写 `sync_server`。同步之后会立即发出移动，而非等假实体自己的定时任务轮转，被附着的玩家本人所见的延迟因此少去一个 tick。剩下的延迟是往返服务端的网络耗时，无从消除；旁人则看不出这份延迟，因为假实体与玩家本体经的是同一条路。
 
-**mannequin 的属性。** 上游 Denizen 完全未涉及此类实体，原版在其上提供的种种设定，脚本一概够不着——经 `disguise ... as:mannequin[...]` 时尤其如此，伪装体由 Denizen 内部创建，任何命令都触及不到。现补上五个属性：`description` 替换名称下方本应显示记分板分数的那一行，不给定内容则恢复默认；`hide_description` 将那一行整个隐去，默认显示的 “NPC” 由此可以去掉；`immovable` 使其不被推动；`main_hand` 更换持物的手；`pose` 设定所取的姿势。均需 Minecraft 1.21.9 及以上版本。其中数项在 Spigot 与 Paper 上的接口互不兼容，故经 Denizen 既有的两侧分派实现。
+**mannequin 的属性。** 上游 Denizen 完全未涉及此类实体，原版在其上提供的种种设定，脚本一概够不着——经 `disguise ... as:mannequin[...]` 时尤其如此，伪装体由 Denizen 内部创建，任何命令都触及不到。现补上五个属性：`description` 替换名称下方本应显示记分板分数的那一行，不给定内容则恢复默认；`hide_description` 将那一行整个隐去，默认显示的 “NPC” 由此可以去掉；`immovable` 使其不被推动；`main_hand` 更换持物的手；`pose` 设定所取的姿势。均需 Minecraft 1.21.9 及以上版本。`<EntityTag.skin_layers>` 及同名机制现也接受 mannequin，外层皮肤的开关与玩家同一写法——mannequin 与玩家同为 Avatar 的派生，这些层存于同一个同步字节中。并无此项的实体不再抛出转型异常，而是直言告知。其中数项在 Spigot 与 Paper 上的接口互不兼容，故经 Denizen 既有的两侧分派实现。
 
 ### 修复
 

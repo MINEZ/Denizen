@@ -70,9 +70,10 @@ public abstract class PlayerHelper {
             this.flag = 1 << offset;
         }
     }
-    public abstract byte getSkinLayers(Player player);
+    /** 皮肤层存于 Avatar 的同步数据中，玩家与 mannequin 同源，故此处按实体接收。 */
+    public abstract byte getSkinLayers(Entity entity);
 
-    public abstract void setSkinLayers(Player player, byte flags);
+    public abstract void setSkinLayers(Entity entity, byte flags);
 
     public abstract void setBossBarTitle(BossBar bar, String title);
 

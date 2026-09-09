@@ -53,6 +53,7 @@ import org.bukkit.boss.BossBar;
 import org.bukkit.craftbukkit.v1_18_R2.CraftServer;
 import org.bukkit.craftbukkit.v1_18_R2.CraftWorld;
 import org.bukkit.craftbukkit.v1_18_R2.boss.CraftBossBar;
+import org.bukkit.craftbukkit.v1_18_R2.entity.CraftEntity;
 import org.bukkit.craftbukkit.v1_18_R2.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_18_R2.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.v1_18_R2.util.CraftMagicNumbers;
@@ -362,13 +363,13 @@ public class PlayerHelperImpl extends PlayerHelper {
     }
 
     @Override
-    public byte getSkinLayers(Player player) {
-        return ((CraftPlayer) player).getHandle().getEntityData().get(ENTITY_HUMAN_SKINLAYERS_DATAWATCHER);
+    public byte getSkinLayers(Entity entity) {
+        return ((CraftEntity) entity).getHandle().getEntityData().get(ENTITY_HUMAN_SKINLAYERS_DATAWATCHER);
     }
 
     @Override
-    public void setSkinLayers(Player player, byte flags) {
-        ((CraftPlayer) player).getHandle().getEntityData().set(ENTITY_HUMAN_SKINLAYERS_DATAWATCHER, flags);
+    public void setSkinLayers(Entity entity, byte flags) {
+        ((CraftEntity) entity).getHandle().getEntityData().set(ENTITY_HUMAN_SKINLAYERS_DATAWATCHER, flags);
     }
 
     @Override

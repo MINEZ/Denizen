@@ -363,13 +363,13 @@ public class PlayerHelperImpl extends PlayerHelper {
     }
 
     @Override
-    public byte getSkinLayers(Player player) {
-        return ((CraftPlayer) player).getHandle().getEntityData().get(PLAYER_DATA_ACCESSOR_SKINLAYERS);
+    public byte getSkinLayers(Entity entity) {
+        return ((CraftEntity) entity).getHandle().getEntityData().get(PLAYER_DATA_ACCESSOR_SKINLAYERS);
     }
 
     @Override
-    public void setSkinLayers(Player player, byte flags) {
-        ((CraftPlayer) player).getHandle().getEntityData().set(PLAYER_DATA_ACCESSOR_SKINLAYERS, flags);
+    public void setSkinLayers(Entity entity, byte flags) {
+        ((CraftEntity) entity).getHandle().getEntityData().set(PLAYER_DATA_ACCESSOR_SKINLAYERS, flags);
     }
 
     @Override
