@@ -85,6 +85,7 @@ Usage documentation lives in the meta comments in the source and is published au
 | `EntityTag` living-entity mechanisms | Mechanism | Fixed |
 | `projectile launched` | Event | Fixed |
 | `potion effects modified` | Event | Fixed |
+| Fake entity tracking after a rejoin | Behaviour | Fixed |
 
 **Cooking recipe tags.** Upstream only offers recipe lookup by result. Looking one up by input meant iterating `server.recipe_ids` and matching against the text of `server.recipe_items`, which exposes just the first material of a multi-material input — the vanilla glass recipe accepts both sand and red sand, so red sand was always missed. These tags build a material-to-recipe index on first use and let vanilla's own `RecipeChoice#test` decide matches, so multi-material and exact-match inputs both work.
 
@@ -106,6 +107,7 @@ This subsystem is derived from [denizen-utilities](https://github.com/isnsest/de
 - **Mechanisms that only apply to living entities** — `no_damage_duration`, `oxygen`, `gliding` and ten others read the entity as a living one without checking first, so using them on a boat, minecart or painting threw a raw null pointer exception. They now report which mechanism was misapplied and to what. The `cast` command had the same flaw and is guarded too.
 - **`projectile launched` event** — `<context.shooter>` threw a null pointer exception when the projectile had no shooter, such as one fired by a dispenser. It now returns null.
 - **`potion effects modified` event** — `<context.effect_type>` and the `effect` switch used Bukkit's legacy effect names such as `SLOW` and `FAST_DIGGING`. They now use the modern keys, `slowness` and `haste`, matching the rest of Denizen.
+- **Fake entities stopped moving once a viewer rejoined.** Every viewer of a fake entity gets a tracker of their own, bound to the connection it was built on. That connection does not survive a disconnect, so after the player came back the updates were still being written to the dead one and the entity sat wherever it had been left. Trackers are now rebuilt when a viewer rejoins the server or changes worlds.
 
 ## Building
 
