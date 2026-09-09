@@ -145,6 +145,17 @@ public class DisguiseCommand extends AbstractCommand {
             NMSHandler.entityHelper.look(fakeToSelf.entity.getBukkitEntity(), position.getYaw() + yawOff, position.getPitch());
         }
 
+        /**
+         * 弃掉现有的伪装体，待下一次生成数据包被拦下时按真身当下的实体编号重建。
+         */
+        public void resetToOthers() {
+            if (toOthers == null) {
+                return;
+            }
+            toOthers.cancelEntity();
+            toOthers = null;
+        }
+
         /** 将伪装体的位置对齐到真身，使随后重发的生成包落在正确的地方。 */
         public void syncToOthersPosition() {
             if (toOthers == null || !toOthers.entity.isFakeValid) {
@@ -289,9 +300,39 @@ public class DisguiseCommand extends AbstractCommand {
 
     public static HashMap<UUID, HashMap<UUID, TrackedDisguise>> disguises = new HashMap<>();
 
+    public static boolean rejoinListenerRegistered = false;
+
+    /**
+     * 玩家重新加入后会换得一个新的实体编号，而伪装体的编号定格在其创建之时，
+     * 二者就此脱节：他人收到的移动数据包指向新编号，其客户端上却只有旧编号的伪装体，
+     * 于是伪装体停在原处不动。故在此弃掉旧的伪装体，令其按新编号重建。
+     */
+    public static void enableRejoinListener() {
+        if (rejoinListenerRegistered) {
+            return;
+        }
+        rejoinListenerRegistered = true;
+        Bukkit.getPluginManager().registerEvents(new RejoinListener(), Denizen.getInstance());
+    }
+
+    public static class RejoinListener implements Listener {
+
+        @EventHandler(priority = EventPriority.MONITOR)
+        public void onPlayerJoin(PlayerJoinEvent event) {
+            HashMap<UUID, TrackedDisguise> playerMap = disguises.get(event.getPlayer().getUniqueId());
+            if (playerMap == null) {
+                return;
+            }
+            for (TrackedDisguise disguise : new ArrayList<>(playerMap.values())) {
+                disguise.resetToOthers();
+            }
+        }
+    }
+
     @Override
     public void execute(ScriptEntry scriptEntry) {
         NetworkInterceptHelper.enable();
+        enableRejoinListener();
         EntityTag entity = scriptEntry.getObjectTag("entity");
         EntityTag as = scriptEntry.argForPrefix("as", EntityTag.class, true);
         boolean cancel = scriptEntry.argAsBoolean("cancel");
