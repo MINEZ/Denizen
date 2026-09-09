@@ -1,6 +1,7 @@
 package com.denizenscript.denizen.objects.properties.entity;
 
 import com.denizenscript.denizen.objects.EntityTag;
+import com.denizenscript.denizen.utilities.PaperAPITools;
 import com.denizenscript.denizencore.objects.Mechanism;
 import com.denizenscript.denizencore.objects.core.ElementTag;
 import com.denizenscript.denizencore.utilities.CoreUtilities;
@@ -25,7 +26,7 @@ public class EntityDescription extends EntityProperty<ElementTag> {
 
     @Override
     public ElementTag getPropertyValue() {
-        String description = as(Mannequin.class).getDescription();
+        String description = PaperAPITools.instance.getMannequinDescription(getEntity());
         return description == null ? null : new ElementTag(description, true);
     }
 
@@ -37,7 +38,7 @@ public class EntityDescription extends EntityProperty<ElementTag> {
     @Override
     public void setPropertyValue(ElementTag value, Mechanism mechanism) {
         String description = value == null ? null : CoreUtilities.clearNBSPs(value.asString());
-        as(Mannequin.class).setDescription(description == null || description.isEmpty() ? null : description);
+        PaperAPITools.instance.setMannequinDescription(getEntity(), description == null || description.isEmpty() ? null : description);
     }
 
     @Override

@@ -80,6 +80,25 @@ public class PaperAPITools {
         return customName != null ? FormattedTextHelper.parseSimpleColorsOnly(customName) : null;
     }
 
+    // mannequin 的描述文本：Spigot 以独立的开关表示隐藏，描述为空即取默认的 “NPC”。
+    // Paper 另有一套以 Adventure 组件为准的接口，见 PaperAPIToolsImpl。
+
+    public String getMannequinDescription(Entity entity) {
+        return ((Mannequin) entity).getDescription();
+    }
+
+    public void setMannequinDescription(Entity entity, String description) {
+        ((Mannequin) entity).setDescription(description);
+    }
+
+    public boolean isMannequinDescriptionHidden(Entity entity) {
+        return ((Mannequin) entity).isHideDescription();
+    }
+
+    public void setMannequinDescriptionHidden(Entity entity, boolean hide) {
+        ((Mannequin) entity).setHideDescription(hide);
+    }
+
     public void setPlayerListName(Player player, String name) {
         player.setPlayerListName(name);
     }
