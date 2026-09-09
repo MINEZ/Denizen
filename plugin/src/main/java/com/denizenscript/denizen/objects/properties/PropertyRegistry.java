@@ -102,6 +102,9 @@ public class PropertyRegistry {
             PropertyParser.registerProperty(EntityHeight.class, EntityTag.class);
             PropertyParser.registerProperty(EntityHorns.class, EntityTag.class);
         }
+        if (NMSHandler.getVersion().isAtLeast(NMSVersion.v1_21)) {
+            PropertyParser.registerProperty(EntityHideDescription.class, EntityTag.class);
+        }
         PropertyParser.registerProperty(EntityHive.class, EntityTag.class);
         PropertyParser.registerProperty(EntityImmune.class, EntityTag.class);
         if (NMSHandler.getVersion().isAtLeast(NMSVersion.v1_19)) {
