@@ -744,6 +744,9 @@ public class DenizenNetworkManagerImpl extends Connection {
                     }
                 }
                 else {
+                    if (disguise.toOthers == null) { // 伪装体尚未建立（例如真身刚重新加入），原样放行。
+                        return false;
+                    }
                     List<SynchedEntityData.DataValue<?>> data = ((CraftEntity) disguise.toOthers.entity.entity).getHandle().getEntityData().getNonDefaultValues();
                     if (data != null) {
                         oldManager.send(new ClientboundSetEntityDataPacket(entityID, data), genericfuturelistener);
