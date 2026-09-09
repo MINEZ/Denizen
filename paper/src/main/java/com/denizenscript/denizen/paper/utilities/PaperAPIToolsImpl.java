@@ -214,9 +214,11 @@ public class PaperAPIToolsImpl extends PaperAPITools {
                     patch.elytra(Key.key(elytra.asString()));
                 }
                 if (model != null) {
-                    PlayerTextures.SkinModel skinModel = model.asEnum(PlayerTextures.SkinModel.class);
+                    // 原版记作 wide 与 slim，Bukkit 记作 CLASSIC 与 SLIM，两种写法都收。
+                    PlayerTextures.SkinModel skinModel = CoreUtilities.equalsIgnoreCase(model.asString(), "wide")
+                            ? PlayerTextures.SkinModel.CLASSIC : model.asEnum(PlayerTextures.SkinModel.class);
                     if (skinModel == null) {
-                        throw new IllegalArgumentException("'" + model + "' is not a valid skin model, use CLASSIC or SLIM");
+                        throw new IllegalArgumentException("'" + model + "' is not a valid skin model, use WIDE (also called CLASSIC) or SLIM");
                     }
                     patch.model(skinModel);
                 }
