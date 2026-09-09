@@ -22,7 +22,7 @@ public class FakeSpawnCommand extends AbstractCommand {
 
     public FakeSpawnCommand() {
         setName("fakespawn");
-        setSyntax("fakespawn [<entity>] [<location>/cancel] (players:<player>|...) (duration:<duration>{10s}) (mount_to:<entity>)");
+        setSyntax("fakespawn [<entity>] [<location>/cancel] (players:<player>|...) (duration:<duration>) (mount_to:<entity>)");
         setRequiredArguments(2, 5);
         isProcedural = false;
         addRemappedPrefixes("duration", "d");
@@ -32,7 +32,7 @@ public class FakeSpawnCommand extends AbstractCommand {
 
     // <--[command]
     // @Name FakeSpawn
-    // @Syntax fakespawn [<entity>] [<location>/cancel] (players:<player>|...) (duration:<duration>{10s}) (mount_to:<entity>)
+    // @Syntax fakespawn [<entity>] [<location>/cancel] (players:<player>|...) (duration:<duration>) (mount_to:<entity>)
     // @Required 2
     // @Maximum 5
     // @Short Makes players see a fake entity spawn that didn't actually happen.
@@ -47,8 +47,9 @@ public class FakeSpawnCommand extends AbstractCommand {
     // Optionally, specify a list of players to show the entity to.
     // If unspecified, the entity will be shown to every player in the world it is spawned in, including any player that joins the server or enters that world while it is still around.
     //
-    // Optionally, specify how long the fake entity should remain for. If unspecified, will default to 10 seconds.
+    // Optionally, specify how long the fake entity should remain for.
     // After the duration is up, the entity will be removed from the player(s).
+    // If unspecified, the entity will remain until it is cancelled or the server stops.
     //
     // Optionally, specify an entity to mount the fake entity to via mount_to:<entity>.
     //
@@ -80,7 +81,7 @@ public class FakeSpawnCommand extends AbstractCommand {
                                    @ArgName("location") @ArgLinear @ArgDefaultNull ObjectTag locationObj,
                                    @ArgName("cancel") boolean cancel,
                                    @ArgName("players") @ArgPrefixed @ArgDefaultNull @ArgSubType(PlayerTag.class) List<PlayerTag> players,
-                                   @ArgName("duration") @ArgPrefixed @ArgDefaultText("10s") DurationTag duration,
+                                   @ArgName("duration") @ArgPrefixed @ArgDefaultNull DurationTag duration,
                                    @ArgName("mount_to") @ArgPrefixed @ArgDefaultNull EntityTag vehicle) {
         if (locationObj != null && entityObj.identify().startsWith("l@")) { // Compensate for legacy entity/location out-of-order support
             ObjectTag swap = locationObj;
