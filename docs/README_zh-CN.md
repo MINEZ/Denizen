@@ -67,6 +67,17 @@ git rebase upstream/dev
 
 | 名称 | 类型 | 改动 |
 | --- | --- | --- |
+| `<LocationTag.has_ce_drawer[(<data_key>)]>` | 标签 | 新增 |
+| `<LocationTag.ce_drawer_item[(<data_key>)]>` | 标签 | 新增 |
+| `<LocationTag.ce_drawer_item_quantity[(<data_key>)]>` | 标签 | 新增 |
+| `<LocationTag.ce_drawer_max_quantity[(<data_key>)]>` | 标签 | 新增 |
+| `<LocationTag.ce_drawer_data_keys>` | 标签 | 新增 |
+| `<LocationTag.has_ce_storage_inventory[(<data_key>)]>` | 标签 | 新增 |
+| `<LocationTag.ce_storage_inventory[(<data_key>)]>` | 标签 | 新增 |
+| `<LocationTag.ce_storage_inventory_data_keys>` | 标签 | 新增 |
+| `<EntityTag.has_ce_storage_inventory[(<data_key>)]>` | 标签 | 新增 |
+| `<EntityTag.ce_storage_inventory[(<data_key>)]>` | 标签 | 新增 |
+| `<EntityTag.ce_storage_inventory_data_keys>` | 标签 | 新增 |
 | `<ItemTag.cooking_result[(<type>)]>` | 标签 | 新增 |
 | `<ItemTag.cooking_recipe_id[(<type>)]>` | 标签 | 新增 |
 | `<ItemTag.cooking_experience[(<type>)]>` | 标签 | 新增 |
@@ -115,6 +126,8 @@ git rebase upstream/dev
 **假实体的默认行为。** 上游的 `fakespawn` 在未给出 `players:` 时只展示给关联玩家。现改为默认展示给假实体所在世界的每一位玩家，并跟随人员变动：只要假实体尚在，其后加入服务器或进入该世界的玩家同样会看到。若要沿用旧行为，显式写明 `players:<player>` 即可。观看者一旦离线或离开该世界便暂停跟踪，待其回来再行恢复，其间本就无从呈现。`duration:` 的默认也一并改了：此前不写表示十秒，现在表示一直保留到被取消或服务器停止。
 
 **假实体的附着。** `attach` 靠改写目标实体的移动数据包来带动被附着者，这对假实体留下了两处缺口：服务端从不向玩家发送其自身的移动，附着到自己身上便自己看不见；而假实体的移动本就只由 Denizen 自行发出。现改为假实体一律走服务端同步。对它们而言这并没有作用于真实实体时的那些副作用——它们不在世界之中，所谓同步不过是改一下坐标——`attach <player.fake_entities> to:<player> offset:0,2,0` 因此无需再写 `sync_server`。同步之后会立即发出移动，而非等假实体自己的定时任务轮转，被附着的玩家本人所见的延迟因此少去一个 tick。剩下的延迟是往返服务端的网络耗时，无从消除；旁人则看不出这份延迟，因为假实体与玩家本体经的是同一条路。
+
+**CraftEngine 的容器。** CraftEngine 自带 Denizen 集成，却没有读取容器内容的途径，相关请求也已[被拒绝](https://github.com/Xiao-MoMi/craft-engine/issues/810)，理由是这些容器属于注册的自定义行为而非通用功能。现补上 11 个标签，覆盖可定义容器的三种行为：`drawer_block`、`simple_storage_block` 与 `simple_storage_furniture`。存储类标签返回的是实时容器，写入即时生效。各标签均可选填 data key，与行为的 `data_key` 配置项按原样精确匹配；不填时取方块或家具上声明的第一个容器，`..._data_keys` 一系则按同一顺序列出全部。家具未配置 `data_key` 时，标签返回其内容实际所在的键——CraftEngine 仅在读写存档时才回落到默认值。另需留意 `ce_drawer_max_quantity` 随所存物品变化：配置为 32 组的抽屉在空置时返回 32，放入物品后返回 32 乘以该物品的最大堆叠数；兼容模式例外，恒返回所配置的组数。以上均不产生编译期依赖——CraftEngine 全程经其自身的类加载器反射访问，成员先按名、再按类型查找，仅被改名不影响使用；若 CraftEngine 重整了这些内部结构，相应的一组标签只是不再注册而已。
 
 **mannequin 的属性。** 上游 Denizen 完全未涉及此类实体，原版在其上提供的种种设定，脚本一概够不着——经 `disguise ... as:mannequin[...]` 时尤其如此，伪装体由 Denizen 内部创建，任何命令都触及不到。现补上五个属性：`description` 替换名称下方本应显示记分板分数的那一行，不给定内容则恢复默认；`hide_description` 将那一行整个隐去，默认显示的 “NPC” 由此可以去掉；`immovable` 使其不被推动；`main_hand` 更换持物的手；`pose` 设定所取的姿势；`profile` 设定所用的皮肤，以一个 MapTag 给出，可含玩家名、UUID、base64 贴图串，或者身体、披风、鞘翅的贴图键与手臂宽度（按原版写 WIDE、SLIM，或按 Bukkit 写 CLASSIC、SLIM 皆可）。给名字或 UUID 则由客户端自行查取，皮肤稍后才到；给贴图则即刻生效。`profile` 仅 Paper 可用，Spigot 的档案类型压根表达不了这些贴图覆盖项。均需 Minecraft 1.21.9 及以上版本。`<EntityTag.skin_layers>` 及同名机制现也接受 mannequin，外层皮肤的开关与玩家同一写法——mannequin 与玩家同为 Avatar 的派生，这些层存于同一个同步字节中。并无此项的实体不再抛出转型异常，而是直言告知。其中数项在 Spigot 与 Paper 上的接口互不兼容，故经 Denizen 既有的两侧分派实现。
 

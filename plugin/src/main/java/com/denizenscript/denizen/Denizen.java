@@ -15,6 +15,7 @@ import com.denizenscript.denizen.objects.InventoryTag;
 import com.denizenscript.denizen.objects.NPCTag;
 import com.denizenscript.denizen.objects.PlayerTag;
 import com.denizenscript.denizen.objects.properties.PropertyRegistry;
+import com.denizenscript.denizen.utilities.craftengine.CraftEngineSupport;
 import com.denizenscript.denizen.scripts.commands.BukkitCommandRegistry;
 import com.denizenscript.denizen.scripts.commands.player.ClickableCommand;
 import com.denizenscript.denizen.scripts.containers.ContainerRegistry;
@@ -348,6 +349,13 @@ public class Denizen extends JavaPlugin {
         try {
             // Initialize all properties
             PropertyRegistry.registerMainProperties();
+        }
+        catch (Exception e) {
+            Debug.echoError(e);
+        }
+        try {
+            // Register the CraftEngine container tags, if CraftEngine is installed
+            CraftEngineSupport.init();
         }
         catch (Exception e) {
             Debug.echoError(e);
