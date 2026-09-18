@@ -89,6 +89,8 @@ public class DialogScriptContainer extends ScriptContainer {
     // screen in between, which re-grabs the mouse and moves the cursor to the center of the screen.
     // When using 'none', end an interaction by closing the dialog from the script with
     // <@link mechanism PlayerTag.close_dialog>.
+    // This covers the exit button and the Escape key too, so a 'list' or 'multi' dialog set to 'none'
+    // needs an 'exit button' whose script closes the dialog, or the player has no way out of it.
     // Note that dialogs shown by this container never pause the game, which is what keeps 'none' usable.
     //
     // DEFINITIONS:
@@ -273,6 +275,8 @@ public class DialogScriptContainer extends ScriptContainer {
     // SCRIPT (default)
     // Runs a script block. A button with no 'script' section simply closes the dialog,
     // which is the usual case for an 'exit button'.
+    // An 'exit button' can carry a 'script' section as well, which is what it takes to leave a dialog
+    // whose 'base.after action' is 'none'.
     //
     // Example:
     // script:
@@ -284,8 +288,10 @@ public class DialogScriptContainer extends ScriptContainer {
     // <context.inputs> returns a MapTag of all active input fields.
     // <context.[input_id]> returns the typed value of the specific input field directly.
     //
-    // Note that a button ID used with a script must be usable in a namespaced key,
-    // meaning only lowercase letters, digits, and the '.', '_', '-' symbols.
+    // Note that a button ID used with a script must be usable in a namespaced key. It is lowercased and
+    // its spaces become underscores on the way there, so beyond letters, digits and spaces only the
+    // '.', '_' and '-' symbols are allowed, and an 'exit button' arrives as 'exit_button' in
+    // <context.button_id>.
     //
     // RUN_COMMAND
     // Runs a command when clicked.
@@ -457,7 +463,7 @@ public class DialogScriptContainer extends ScriptContainer {
                     dialogs.add(dialog);
                 }
                 DialogListType.Builder dialogList = DialogType.dialogList(RegistrySet.valueSet(RegistryKey.DIALOG, dialogs));
-                ActionButton exitButton = createActionButton("exit button", getExitButtonSection(), context);
+                ActionButton exitButton = createActionButton(getExitButtonPath(), getExitButtonSection(), context);
                 if (columns != null) {
                     dialogList.columns(columns);
                 }
@@ -475,7 +481,7 @@ public class DialogScriptContainer extends ScriptContainer {
             }
             case "multi" -> {
                 Integer columns = getInt(getContents(), "base.columns", context);
-                ActionButton exitButton = createActionButton("exit button", getExitButtonSection(), context);
+                ActionButton exitButton = createActionButton(getExitButtonPath(), getExitButtonSection(), context);
                 List<ActionButton> actionButtons = createActionButtons(context, dialogData.configurationMap.get("buttons"));
                 if (actionButtons == null) {
                     Debug.echoError("Dialog script '" + getName() + "' is missing a required 'buttons'");
@@ -501,6 +507,11 @@ public class DialogScriptContainer extends ScriptContainer {
     public YamlConfiguration getExitButtonSection() {
         YamlConfiguration section = getConfigurationSection("base.exit button");
         return section != null ? section : getConfigurationSection("exit button");
+    }
+
+    /** 点击回传的 key 需要能反查到按钮段，因此退出按钮也要按其实际所在的路径构造。 */
+    public String getExitButtonPath() {
+        return getConfigurationSection("base.exit button") != null ? "base.exit button" : "exit button";
     }
 
     public DialogBase getDialogBase(TagContext context, DialogScriptHelper.DialogData dialogData) {
@@ -667,6 +678,11 @@ public class DialogScriptContainer extends ScriptContainer {
         return Key.key("denizen", CoreUtilities.toLowerCase(getName()) + "/" + CoreUtilities.toLowerCase(buttonPath));
     }
 
+    /** 按钮路径转成命名空间 key 可用的形式：统一小写，并把空格折成下划线（'exit button' 等带空格的段落也就能绑定脚本了）。 */
+    public static String toKeyPath(String path) {
+        return CoreUtilities.toLowerCase(path).replace(' ', '_');
+    }
+
     /** 命名空间 key 只允许小写字母、数字与 '.'、'_'、'-'、'/'，不合规的按钮 ID 无法绑定脚本。 */
     public static boolean isValidKeyPath(String path) {
         for (int i = 0; i < path.length(); i++) {
@@ -716,10 +732,10 @@ public class DialogScriptContainer extends ScriptContainer {
             case "SCRIPT" -> {
                 // 没有 script 段的按钮（例如 exit button）只需关闭对话框，不绑定任何动作。
                 if (section.contains("script")) {
-                    String keyPath = CoreUtilities.toLowerCase(path);
+                    String keyPath = toKeyPath(path);
                     if (!isValidKeyPath(keyPath)) {
                         Debug.echoError("Dialog script '" + getName() + "' has a button at '" + path + "' with a script,"
-                                + " but its ID cannot be used in a namespaced key (only lowercase letters, digits, and '.', '_', '-' are allowed).");
+                                + " but its ID cannot be used in a namespaced key (only letters, digits, spaces, and '.', '_', '-' are allowed).");
                     }
                     else {
                         action = DialogAction.customClick(buttonKey(keyPath), null);
