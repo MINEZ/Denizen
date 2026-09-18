@@ -1,0 +1,8 @@
+-encoding
+UTF-8
+--release
+16
+-d
+/tmp/claude-0/-home-claude/a0031f8b-51b0-54f9-91b0-777c55f77f6b/scratchpad/out
+paper/src/main/java/com/denizenscript/denizen/paper/containers/DialogScriptContainer.java
+paper/src/main/java/com/denizenscript/denizen/paper/events/PlayerCustomClickScriptEvent.java

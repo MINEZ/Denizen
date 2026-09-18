@@ -111,9 +111,9 @@ git rebase upstream/dev
 
 **熔炼配方标签。** 上游只提供了按产物查找配方的能力。想按输入反查，只能遍历 `server.recipe_ids` 再用 `server.recipe_items` 的文本做匹配，而后者对多材料输入只会暴露第一个材料——原版玻璃配方同时接受沙子与红沙，红沙因此必然漏判。这组标签在首次查询时构建材料到配方的索引，是否匹配交由原版的 `RecipeChoice#test` 判断，多材料输入与精确匹配输入都能正确处理。
 
-**对话框。** 基于 Paper dialog API 的 `dialog` 脚本容器，支持 `confirm`、`notice`、`list`、`multi` 四种版式，以及 `base`、`bodies`、`inputs`、`buttons` 与用于动态生成内容的 `procedural` 段。`base` 段还可以写 `after action`，取值为 `close`（缺省）、`none` 或 `wait_for_response`，用于决定按钮被点击后客户端如何处置对话框界面；按钮要打开下一个对话框时请填 `none`，这样客户端不会在中途退回游戏界面，鼠标光标也就不会被重置到屏幕正中。依赖 Paper 1.21.6 及以上版本；在更低版本或非 Paper 服务端上这些内容不会被注册，`type: dialog` 容器将无法加载，其余内容不受影响。
+**对话框。** 基于 Paper dialog API 的 `dialog` 脚本容器，支持 `confirm`、`notice`、`list`、`multi` 四种版式，以及 `base`、`bodies`、`inputs`、`buttons` 与用于动态生成内容的 `procedural` 段。`base` 段还可以写 `after action`，取值为 `close`（缺省）、`none` 或 `wait_for_response`，用于决定按钮被点击后客户端如何处置对话框界面；按钮要打开下一个对话框时请填 `none`，这样客户端不会在中途退回游戏界面，鼠标光标也就不会被重置到屏幕正中。注意 `none` 同样作用于退出按钮与 Esc 键，因此 `list` 与 `multi` 对话框填 `none` 时，必须给 `exit button` 写一段关闭对话框的脚本。依赖 Paper 1.21.6 及以上版本；在更低版本或非 Paper 服务端上这些内容不会被注册，`type: dialog` 容器将无法加载，其余内容不受影响。
 
-本部分衍生自以 Apache 2.0 许可证发布的 [denizen-utilities](https://github.com/isnsest/denizen-utilities)，并沿用其接口，原有 `type: dialog` 脚本无需改动即可迁移。有两处刻意的差异：`exit button` 改为从 `base` 段读取（原实现只读容器根部，导致退出按钮始终不生效），同时兼容旧写法；没有 `script` 段的按钮不再绑定点击动作，点击后仅关闭对话框。
+本部分衍生自以 Apache 2.0 许可证发布的 [denizen-utilities](https://github.com/isnsest/denizen-utilities)，并沿用其接口，原有 `type: dialog` 脚本无需改动即可迁移。有三处刻意的差异：`exit button` 改为从 `base` 段读取（原实现只读容器根部，导致退出按钮始终不生效），同时兼容旧写法；没有 `script` 段的按钮不再绑定点击动作，点击后仅关闭对话框；按钮 ID 中的空格在拼成命名空间 key 时折成下划线，`exit button` 因此也能带自己的 `script` 段（原实现会因这个空格直接丢弃动作，不予绑定）。
 
 **内联图像。** `<&head[...]>` 与 `<&sprite[...]>` 输出 1.21.9 引入的 object 类型文本组件，可在聊天中内联渲染玩家头像或图集精灵。Denizen 的文本管线建立在已被冻结的 BungeeCord Chat API 之上，会丢弃这一类型的组件，因此本 Fork 自带了对应的组件与序列化器。**需要 1.21.9 及以上的客户端**，低版本客户端不会显示，但也不会报错。
 
