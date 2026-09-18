@@ -93,6 +93,7 @@ git rebase upstream/dev
 | `player respawns` | 事件 | 修改 |
 | `PlayerTag.save_data` | 机制 | 新增 |
 | `fakespawn` | 命令 | 修改 |
+| `bossbar` | 命令 | 修改 |
 | `attach` | 命令 | 修改 |
 | `EntityTag.hide_description` | 属性 | 新增 |
 | `EntityTag.description` | 属性 | 新增 |
@@ -106,6 +107,7 @@ git rebase upstream/dev
 | `projectile launched` | 事件 | 修复 |
 | `potion effects modified` | 事件 | 修复 |
 | 重新加入后的假实体跟踪 | 行为 | 修复 |
+| 重新加入后的 bossbar 可见性 | 行为 | 修复 |
 | 他人视角中的伪装体移动 | 行为 | 修复 |
 | 他人视角中的伪装体属性 | 行为 | 修复 |
 
@@ -114,6 +116,8 @@ git rebase upstream/dev
 **对话框。** 基于 Paper dialog API 的 `dialog` 脚本容器，支持 `confirm`、`notice`、`list`、`multi` 四种版式，以及 `base`、`bodies`、`inputs`、`buttons` 与用于动态生成内容的 `procedural` 段。`base` 段还可以写 `after action`，取值为 `close`（缺省）、`none` 或 `wait_for_response`，用于决定按钮被点击后客户端如何处置对话框界面；按钮要打开下一个对话框时请填 `none`，这样客户端不会在中途退回游戏界面，鼠标光标也就不会被重置到屏幕正中。注意 `none` 同样作用于退出按钮与 Esc 键，因此 `list` 与 `multi` 对话框填 `none` 时，必须给 `exit button` 写一段关闭对话框的脚本。依赖 Paper 1.21.6 及以上版本；在更低版本或非 Paper 服务端上这些内容不会被注册，`type: dialog` 容器将无法加载，其余内容不受影响。
 
 本部分衍生自以 Apache 2.0 许可证发布的 [denizen-utilities](https://github.com/isnsest/denizen-utilities)，并沿用其接口，原有 `type: dialog` 脚本无需改动即可迁移。有三处刻意的差异：`exit button` 改为从 `base` 段读取（原实现只读容器根部，导致退出按钮始终不生效），同时兼容旧写法；没有 `script` 段的按钮不再绑定点击动作，点击后仅关闭对话框；按钮 ID 中的空格在拼成命名空间 key 时折成下划线，`exit button` 因此也能带自己的 `script` 段（原实现会因这个空格直接丢弃动作，不予绑定）。
+
+**bossbar 的默认行为。** 上游的 `bossbar` 在未给出 `players:` 时只展示给关联玩家，脚本没有关联玩家时更是直接报错中止。现改为默认展示给全服玩家，并跟随人员变动：只要该 bossbar 尚在，其后加入服务器的玩家同样会看到。若要沿用旧行为，显式写明 `players:<player>` 即可。注意对全服可见的 bossbar 使用带 `players:` 的 `remove`，会将其收窄至当下能看到它的那批玩家，其后加入的玩家便不再跟随。
 
 **内联图像。** `<&head[...]>` 与 `<&sprite[...]>` 输出 1.21.9 引入的 object 类型文本组件，可在聊天中内联渲染玩家头像或图集精灵。Denizen 的文本管线建立在已被冻结的 BungeeCord Chat API 之上，会丢弃这一类型的组件，因此本 Fork 自带了对应的组件与序列化器。**需要 1.21.9 及以上的客户端**，低版本客户端不会显示，但也不会报错。
 
@@ -138,6 +142,7 @@ git rebase upstream/dev
 - **`projectile launched` 事件** —— `<context.shooter>` 在弹射物没有射手时（例如由发射器发射）会抛出空指针异常，现改为返回 null。
 - **`potion effects modified` 事件** —— `<context.effect_type>` 与 `effect` 开关此前使用 Bukkit 的旧式效果名（如 `SLOW`、`FAST_DIGGING`），现改用现代的键名（`slowness`、`haste`），与 Denizen 其余部分保持一致。
 - **假实体在观看者重新加入后不再移动。** 假实体为每个观看者单独建立跟踪器，而跟踪器绑定于建立时的那条连接。玩家断线后连接即告作废，重新加入时更新仍写往旧连接，实体便停在原处不动。现改为在观看者重新加入服务器或切换世界时重建跟踪器。
+- **bossbar 在观看者重新加入后不复可见。** Bukkit 按玩家实例记录 bossbar 的观看者，而玩家所对应的实例并不能挺过一次断线，于是重新加入的观看者再也收不到该 bossbar。那个作废的实例还会被一直攥着直到 bossbar 消失，既无从回收，又会继续出现在 `<server.bossbar_viewers[<bossbar_id>]>` 之中。现改为另按 UUID 记录观看者：玩家退出时释放作废的实例，重新加入时再行补发。`bossbar update` 与 `bossbar remove` 也不再于指名的玩家离线时把 null 交给 Bukkit，此前那会抛出一个未经修饰的异常。
 - **伪装体在他人视角中停在原地。** 自 1.19 起，伪装的处理会拦下该实体的移动与传送数据包，除末影龙之外一律丢弃，转而重发一次伪装。而重发的生成包用的是伪装实体创建时的位置，该位置从不更新，于是伪装体始终停在伪装发生的地方。现改为放行移动数据包——伪装体的实体编号与真身相同，客户端会直接将其作用于伪装体；重发生成包之前则先将伪装实体移到真身所在，使中途进入视野的玩家也能看到它在正确的位置。
 - **伪装体的属性从未生效。** 伪装体与观看者建立配对时会发出自己那一套属性，而真身的属性包随即跟到，二者实体编号相同，后者将前者覆盖。于是经 `as:<类型>[attribute_base_values=[...]]` 设定的属性——最常用的莫过于缩放——一概不起作用。现改为对被伪装者以外的观看者丢弃真身的属性包；被伪装者本人的仍原样放行，其客户端的移动预测系于此。
 - **伪装者重新加入后，伪装体又停在了原地。** 玩家重新连接后会换得一个新的实体编号，而伪装体的编号定格在其创建之时。于是他人收到的移动数据包指向新编号，其客户端上却只有旧编号的伪装体，伪装体便又一次停下。现改为在被伪装的玩家重新加入时弃掉旧的伪装体，待下一次拦下生成数据包时按其当下的编号重建。
