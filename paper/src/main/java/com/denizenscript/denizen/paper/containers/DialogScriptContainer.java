@@ -80,6 +80,17 @@ public class DialogScriptContainer extends ScriptContainer {
     // - list    : Shows a list of other dialog scripts
     // - multi   : Grid layout with multiple action buttons
     //
+    // AFTER ACTION:
+    // 'base.after action' controls what the client does with the dialog screen after a button is clicked:
+    // - close (default)   : closes the dialog and returns to the screen behind it
+    // - none              : leaves the dialog open, so the script decides what comes next
+    // - wait_for_response : replaces the dialog with a 'waiting for response' screen
+    // Prefer 'none' for a button that opens another dialog: with 'close' the client drops back to the game
+    // screen in between, which re-grabs the mouse and moves the cursor to the center of the screen.
+    // When using 'none', end an interaction by closing the dialog from the script with
+    // <@link mechanism PlayerTag.close_dialog>.
+    // Note that dialogs shown by this container never pause the game, which is what keeps 'none' usable.
+    //
     // DEFINITIONS:
     // Use a 'definitions' key to name the definitions passed in by <@link command showdialog>,
     // in the same format as task script containers.
@@ -103,6 +114,7 @@ public class DialogScriptContainer extends ScriptContainer {
     //         # Optional window settings
     //         external title: App Title
     //         can close with escape: true
+    //         after action: close
     //
     //         # Layout columns (list or multi)
     //         columns: 3
@@ -506,13 +518,16 @@ public class DialogScriptContainer extends ScriptContainer {
         inputs(baseBuilder, dialogData, context);
         bodies(baseBuilder, dialogData.configurationMap.get("bodies"), context);
         if (contains("base.after action")) {
-            String action = CoreUtilities.toUpperCase(getString(getContents(), "base.after action", context));
+            String rawAction = getString(getContents(), "base.after action", context, "");
+            String action = CoreUtilities.toLowerCase(rawAction == null ? "" : rawAction);
             DialogBase.DialogAfterAction afterAction = switch (action) {
-                case "NONE" -> DialogBase.DialogAfterAction.NONE;
-                case "WAIT_FOR_RESPONSE" -> DialogBase.DialogAfterAction.WAIT_FOR_RESPONSE;
+                case "none" -> DialogBase.DialogAfterAction.NONE;
+                case "wait_for_response" -> DialogBase.DialogAfterAction.WAIT_FOR_RESPONSE;
                 default -> {
-                    if (!action.isEmpty() && !action.equals("CLOSE")) {
-                        Debug.echoError("Dialog script '" + getName() + "' has an invalid 'base.after action' value: '" + action + "'.");
+                    // 空值多半来自标签解析为空，沿用旧行为不报错。
+                    if (!action.isEmpty() && !action.equals("close")) {
+                        Debug.echoError("Dialog script '" + getName() + "' has an invalid 'base.after action' value: '" + rawAction
+                                + "' (valid values are: close, none, wait_for_response).");
                     }
                     yield DialogBase.DialogAfterAction.CLOSE;
                 }
