@@ -111,7 +111,7 @@ git rebase upstream/dev
 
 **熔炼配方标签。** 上游只提供了按产物查找配方的能力。想按输入反查，只能遍历 `server.recipe_ids` 再用 `server.recipe_items` 的文本做匹配，而后者对多材料输入只会暴露第一个材料——原版玻璃配方同时接受沙子与红沙，红沙因此必然漏判。这组标签在首次查询时构建材料到配方的索引，是否匹配交由原版的 `RecipeChoice#test` 判断，多材料输入与精确匹配输入都能正确处理。
 
-**对话框。** 基于 Paper dialog API 的 `dialog` 脚本容器，支持 `confirm`、`notice`、`list`、`multi` 四种版式，以及 `base`、`bodies`、`inputs`、`buttons` 与用于动态生成内容的 `procedural` 段。依赖 Paper 1.21.6 及以上版本；在更低版本或非 Paper 服务端上这些内容不会被注册，`type: dialog` 容器将无法加载，其余内容不受影响。
+**对话框。** 基于 Paper dialog API 的 `dialog` 脚本容器，支持 `confirm`、`notice`、`list`、`multi` 四种版式，以及 `base`、`bodies`、`inputs`、`buttons` 与用于动态生成内容的 `procedural` 段。`base` 段还可以写 `after action`，取值为 `close`（缺省）、`none` 或 `wait_for_response`，用于决定按钮被点击后客户端如何处置对话框界面；按钮要打开下一个对话框时请填 `none`，这样客户端不会在中途退回游戏界面，鼠标光标也就不会被重置到屏幕正中。依赖 Paper 1.21.6 及以上版本；在更低版本或非 Paper 服务端上这些内容不会被注册，`type: dialog` 容器将无法加载，其余内容不受影响。
 
 本部分衍生自以 Apache 2.0 许可证发布的 [denizen-utilities](https://github.com/isnsest/denizen-utilities)，并沿用其接口，原有 `type: dialog` 脚本无需改动即可迁移。有两处刻意的差异：`exit button` 改为从 `base` 段读取（原实现只读容器根部，导致退出按钮始终不生效），同时兼容旧写法；没有 `script` 段的按钮不再绑定点击动作，点击后仅关闭对话框。
 
