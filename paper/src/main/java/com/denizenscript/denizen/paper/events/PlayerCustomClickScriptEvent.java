@@ -223,6 +223,15 @@ public class PlayerCustomClickScriptEvent extends ScriptEvent {
      * 也可能就是容器里写死的段落，此时无需依赖本次展示的数据即可取到。
      */
     public static YamlConfiguration getButtonSection(DialogScriptContainer container, DialogScriptHelper.DialogData dialogData, String buttonPath) {
+        YamlConfiguration section = lookupButtonSection(container, dialogData, buttonPath);
+        if (section == null && buttonPath.indexOf('_') >= 0) {
+            // key 中的下划线可能来自按钮段名里的空格，见 DialogScriptContainer 的 toKeyPath。
+            section = lookupButtonSection(container, dialogData, buttonPath.replace('_', ' '));
+        }
+        return section;
+    }
+
+    public static YamlConfiguration lookupButtonSection(DialogScriptContainer container, DialogScriptHelper.DialogData dialogData, String buttonPath) {
         int firstDot = buttonPath.indexOf('.');
         if (firstDot >= 0) {
             if (dialogData != null) {
