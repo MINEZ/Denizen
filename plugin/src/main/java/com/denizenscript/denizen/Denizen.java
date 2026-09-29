@@ -18,6 +18,7 @@ import com.denizenscript.denizen.objects.properties.PropertyRegistry;
 import com.denizenscript.denizen.utilities.craftengine.CraftEngineSupport;
 import com.denizenscript.denizen.scripts.commands.BukkitCommandRegistry;
 import com.denizenscript.denizen.scripts.commands.player.ClickableCommand;
+import com.denizenscript.denizen.scripts.commands.world.AreaDisplayCommand;
 import com.denizenscript.denizen.scripts.containers.ContainerRegistry;
 import com.denizenscript.denizen.scripts.containers.core.*;
 import com.denizenscript.denizen.scripts.triggers.TriggerRegistry;
@@ -508,6 +509,7 @@ public class Denizen extends JavaPlugin {
         triggerRegistry.disableCoreMembers();
         getLogger().log(Level.INFO, " v" + getDescription().getVersion() + " disabled.");
         Bukkit.getServer().getScheduler().cancelTasks(this);
+        AreaDisplayCommand.shutdown();
         HandlerList.unregisterAll(this);
         saveSaves(true);
         worldFlags.shutdown();
