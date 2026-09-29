@@ -81,8 +81,12 @@ public class AreaDisplayCommand extends AbstractCommand {
     // Vanilla clients do not render ordinary particles further than 32 blocks away, so for a range above 32 the particles are forced,
     // which also makes clients render them regardless of their particle settings.
     //
-    // Optionally, specify 'grid:true' to additionally draw a grid on the surface of the area, with a line on every block.
-    // An ellipsoid's grid consists of a horizontal ring on every block of height, and meridians spaced one block apart along its equator.
+    // Optionally, specify 'grid:true' to additionally draw a grid on the surface of the area.
+    // The grid gets sparser as the surface gets bigger: its lines are spaced one block apart, plus one more block for every 256 square blocks
+    // of the surface they are on, up to 30 blocks apart. Each pair of opposite faces of a cuboid is spaced separately;
+    // the side faces of a polygon share the spacing of the widest one, so the horizontal lines meet all the way around.
+    // An ellipsoid's grid consists of horizontal rings and meridians, spaced by the biggest face of its bounding box.
+    // Grid lines are drawn with at most 2 particles per block, however high the density is.
     // Use 'grid:false' when updating to hide the grid again.
     //
     // A single display may not consist of more than 200,000 particles. Lower the density or disable the grid for very large areas.
@@ -124,6 +128,15 @@ public class AreaDisplayCommand extends AbstractCommand {
 
     /** 原版客户端只渲染 32 格以内的普通粒子，超过此距离须强制发送。 */
     public static final double VANILLA_PARTICLE_RANGE = 32;
+
+    /** 网格线的每格粒子数上限，网格只为勾勒表面，无需与轮廓一样密。 */
+    public static final int MAX_GRID_DENSITY = 2;
+
+    /** 网格间距按所在表面的面积放宽：每 256 平方格加宽一格。 */
+    public static final double GRID_AREA_PER_SPACING = 256;
+
+    /** 网格间距的上限，再宽就看不出是网格了。 */
+    public static final int MAX_GRID_SPACING = 30;
 
     /** 空间分桶的边长，与区块段一致。 */
     public static final int BUCKET_SIZE = 16;
@@ -299,6 +312,8 @@ public class AreaDisplayCommand extends AbstractCommand {
 
         public final double density;
 
+        public final double gridDensity;
+
         public final Map<Long, PointBucket> buckets = new HashMap<>();
 
         public int count = 0;
@@ -307,6 +322,7 @@ public class AreaDisplayCommand extends AbstractCommand {
 
         public PointCollector(int density) {
             this.density = density;
+            this.gridDensity = Math.min(density, MAX_GRID_DENSITY);
         }
 
         public void add(double x, double y, double z) {
@@ -327,8 +343,8 @@ public class AreaDisplayCommand extends AbstractCommand {
             bucket.add(x, y, z);
         }
 
-        public int stepsFor(double length) {
-            return Math.max(1, (int) Math.ceil(length * density));
+        public int stepsFor(double length, boolean grid) {
+            return Math.max(1, (int) Math.ceil(length * (grid ? gridDensity : density)));
         }
 
         /** 画一条线段，含两端点。 */
@@ -336,14 +352,14 @@ public class AreaDisplayCommand extends AbstractCommand {
             lineInternal(x1, y1, z1, x2, y2, z2, true);
         }
 
-        /** 画一条线段，不含两端点，用于端点已落在轮廓上的网格线。 */
+        /** 画一条网格线，不含两端点，其两端已落在轮廓上。 */
         public void lineInterior(double x1, double y1, double z1, double x2, double y2, double z2) {
             lineInternal(x1, y1, z1, x2, y2, z2, false);
         }
 
         public void lineInternal(double x1, double y1, double z1, double x2, double y2, double z2, boolean withEnds) {
             double dx = x2 - x1, dy = y2 - y1, dz = z2 - z1;
-            int steps = stepsFor(Math.sqrt(dx * dx + dy * dy + dz * dz));
+            int steps = stepsFor(Math.sqrt(dx * dx + dy * dy + dz * dz), !withEnds);
             int start = withEnds ? 0 : 1, end = withEnds ? steps : steps - 1;
             for (int i = start; i <= end && !overflow; i++) {
                 double t = (double) i / steps;
@@ -356,12 +372,12 @@ public class AreaDisplayCommand extends AbstractCommand {
          * 闭合的整圈不重复画终点。
          */
         public void ellipseArc(double cx, double cy, double cz, double ax, double ay, double az, double bx, double by, double bz,
-                               double from, double to, boolean withEnds) {
+                               double from, double to, boolean withEnds, boolean grid) {
             double a = Math.sqrt(ax * ax + ay * ay + az * az), b = Math.sqrt(bx * bx + by * by + bz * bz);
             double fullLength = Math.PI * (3 * (a + b) - Math.sqrt((3 * a + b) * (a + 3 * b)));
             double span = to - from;
             boolean closed = span >= Math.PI * 2 - 1e-9;
-            int steps = Math.max(closed ? 8 : 2, stepsFor(fullLength * span / (Math.PI * 2)));
+            int steps = Math.max(closed ? 8 : 2, stepsFor(fullLength * span / (Math.PI * 2), grid));
             int start = withEnds ? 0 : 1, end = (closed || !withEnds) ? steps - 1 : steps;
             for (int i = start; i <= end && !overflow; i++) {
                 double t = from + span * i / steps;
@@ -377,6 +393,14 @@ public class AreaDisplayCommand extends AbstractCommand {
             }
             return result;
         }
+    }
+
+    /**
+     * 按所在表面的面积定出网格间距（格），面积越大间距越宽，封顶 MAX_GRID_SPACING。
+     * 网格线的条数因此大致与表面边长成正比，而非与面积成正比，大区域的粒子数不会随之暴涨。
+     */
+    public static int gridSpacing(double area) {
+        return Math.min((int) (area / GRID_AREA_PER_SPACING) + 1, MAX_GRID_SPACING);
     }
 
     public static void collectCuboid(PointCollector collector, CuboidTag cuboid, boolean grid) {
@@ -396,28 +420,30 @@ public class AreaDisplayCommand extends AbstractCommand {
             if (!grid) {
                 continue;
             }
-            // 六个面上每隔一格各画一条横线与竖线，线的两端落在棱上，故不含端点。
-            for (double x = x1 + 1; x < x2; x++) {
-                for (double z : new double[] {z1, z2}) {
+            // 每对相对的面各按其面积定出间距，从低角起每隔该间距画一条横线与竖线，线的两端落在棱上，故不含端点。
+            double width = x2 - x1, height = y2 - y1, length = z2 - z1;
+            int spacingXY = gridSpacing(width * height), spacingZY = gridSpacing(length * height), spacingXZ = gridSpacing(width * length);
+            for (double z : new double[] {z1, z2}) {
+                for (double x = x1 + spacingXY; x < x2; x += spacingXY) {
                     collector.lineInterior(x, y1, z, x, y2, z);
                 }
-                for (double y : new double[] {y1, y2}) {
-                    collector.lineInterior(x, y, z1, x, y, z2);
-                }
-            }
-            for (double y = y1 + 1; y < y2; y++) {
-                for (double z : new double[] {z1, z2}) {
+                for (double y = y1 + spacingXY; y < y2; y += spacingXY) {
                     collector.lineInterior(x1, y, z, x2, y, z);
                 }
-                for (double x : new double[] {x1, x2}) {
+            }
+            for (double x : new double[] {x1, x2}) {
+                for (double z = z1 + spacingZY; z < z2; z += spacingZY) {
+                    collector.lineInterior(x, y1, z, x, y2, z);
+                }
+                for (double y = y1 + spacingZY; y < y2; y += spacingZY) {
                     collector.lineInterior(x, y, z1, x, y, z2);
                 }
             }
-            for (double z = z1 + 1; z < z2; z++) {
-                for (double x : new double[] {x1, x2}) {
-                    collector.lineInterior(x, y1, z, x, y2, z);
+            for (double y : new double[] {y1, y2}) {
+                for (double x = x1 + spacingXZ; x < x2; x += spacingXZ) {
+                    collector.lineInterior(x, y, z1, x, y, z2);
                 }
-                for (double y : new double[] {y1, y2}) {
+                for (double z = z1 + spacingXZ; z < z2; z += spacingXZ) {
                     collector.lineInterior(x1, y, z, x2, y, z);
                 }
             }
@@ -439,22 +465,30 @@ public class AreaDisplayCommand extends AbstractCommand {
         if (!grid || size < 3) {
             return;
         }
-        // 侧面：沿每条边每隔一格画一条竖线，并在每格高度画一条横线。
+        // 侧面：各面共用同一间距，使横线绕多边形一周首尾相接；间距取最宽的那一面来定。
+        double longestEdge = 0, doubleArea = 0;
+        for (int i = 0; i < size; i++) {
+            PolygonTag.Corner start = corners.get(i), end = corners.get((i + 1) % size);
+            longestEdge = Math.max(longestEdge, Math.hypot(end.x - start.x, end.z - start.z));
+            doubleArea += start.x * end.z - end.x * start.z;
+        }
+        int wallSpacing = gridSpacing(longestEdge * (y2 - y1));
         for (int i = 0; i < size; i++) {
             PolygonTag.Corner start = corners.get(i), end = corners.get((i + 1) % size);
             double dx = end.x - start.x, dz = end.z - start.z;
             double length = Math.sqrt(dx * dx + dz * dz);
             if (y2 > y1) {
-                for (double d = 1; d < length; d++) {
+                for (double d = wallSpacing; d < length; d += wallSpacing) {
                     double t = d / length;
                     collector.lineInterior(start.x + dx * t, y1, start.z + dz * t, start.x + dx * t, y2, start.z + dz * t);
                 }
             }
-            for (double y = Math.floor(y1) + 1; y < y2; y++) {
+            for (double y = y1 + wallSpacing; y < y2; y += wallSpacing) {
                 collector.lineInterior(start.x, y, start.z, end.x, y, end.z);
             }
         }
-        // 顶面与底面：以每格的 x 与 z 坐标切割多边形，按奇偶规则两两配对交点，画出落在多边形内的线段。
+        // 顶面与底面：按多边形面积定出间距，以相应的 x 与 z 坐标切割多边形，按奇偶规则两两配对交点，画出落在多边形内的线段。
+        int topSpacing = gridSpacing(Math.abs(doubleArea) / 2);
         double minX = Double.MAX_VALUE, maxX = -Double.MAX_VALUE, minZ = Double.MAX_VALUE, maxZ = -Double.MAX_VALUE;
         for (PolygonTag.Corner corner : corners) {
             minX = Math.min(minX, corner.x);
@@ -463,7 +497,7 @@ public class AreaDisplayCommand extends AbstractCommand {
             maxZ = Math.max(maxZ, corner.z);
         }
         double[] faces = y2 > y1 ? new double[] {y1, y2} : new double[] {y1};
-        for (double x = Math.floor(minX) + 1; x < maxX; x++) {
+        for (double x = Math.floor(minX) + topSpacing; x < maxX; x += topSpacing) {
             List<Double> hits = new ArrayList<>();
             for (int i = 0; i < size; i++) {
                 PolygonTag.Corner start = corners.get(i), end = corners.get((i + 1) % size);
@@ -478,7 +512,7 @@ public class AreaDisplayCommand extends AbstractCommand {
                 }
             }
         }
-        for (double z = Math.floor(minZ) + 1; z < maxZ; z++) {
+        for (double z = Math.floor(minZ) + topSpacing; z < maxZ; z += topSpacing) {
             List<Double> hits = new ArrayList<>();
             for (int i = 0; i < size; i++) {
                 PolygonTag.Corner start = corners.get(i), end = corners.get((i + 1) % size);
@@ -499,29 +533,29 @@ public class AreaDisplayCommand extends AbstractCommand {
         double cx = ellipsoid.center.getX(), cy = ellipsoid.center.getY(), cz = ellipsoid.center.getZ();
         double rx = ellipsoid.size.getX(), ry = ellipsoid.size.getY(), rz = ellipsoid.size.getZ();
         double full = Math.PI * 2;
-        collector.ellipseArc(cx, cy, cz, rx, 0, 0, 0, 0, rz, 0, full, true);
-        collector.ellipseArc(cx, cy, cz, rx, 0, 0, 0, ry, 0, 0, full, true);
-        collector.ellipseArc(cx, cy, cz, 0, 0, rz, 0, ry, 0, 0, full, true);
+        collector.ellipseArc(cx, cy, cz, rx, 0, 0, 0, 0, rz, 0, full, true, false);
+        collector.ellipseArc(cx, cy, cz, rx, 0, 0, 0, ry, 0, 0, full, true, false);
+        collector.ellipseArc(cx, cy, cz, 0, 0, rz, 0, ry, 0, 0, full, true, false);
         if (!grid) {
             return;
         }
-        // 纬线：每格高度一圈水平椭圆，赤道已画过，跳过。
-        for (double y = Math.floor(cy - ry) + 1; y < cy + ry; y++) {
-            double offset = (y - cy) / ry;
-            if (Math.abs(y - cy) < 1e-6) {
-                continue;
-            }
-            double scale = Math.sqrt(1 - offset * offset);
-            collector.ellipseArc(cx, y, cz, rx * scale, 0, 0, 0, 0, rz * scale, 0, full, true);
+        // 间距按外接长方体最大的一面来定，纬线与经线共用。
+        int spacing = gridSpacing(4 * Math.max(rx * ry, Math.max(rz * ry, rx * rz)));
+        // 纬线：自赤道起上下每隔该间距一圈水平椭圆，赤道已画过，跳过。
+        for (double offset = spacing; offset < ry; offset += spacing) {
+            double ratio = offset / ry;
+            double scale = Math.sqrt(1 - ratio * ratio);
+            collector.ellipseArc(cx, cy + offset, cz, rx * scale, 0, 0, 0, 0, rz * scale, 0, full, true, true);
+            collector.ellipseArc(cx, cy - offset, cz, rx * scale, 0, 0, 0, 0, rz * scale, 0, full, true, true);
         }
-        // 经线：沿赤道每隔约一格一条，自顶至底画半圈，两极点已落在轮廓上，故不含端点。
+        // 经线：沿赤道每隔约该间距一条，自顶至底画半圈，两极点已落在轮廓上，故不含端点。
         double a = rx, b = rz;
         double equator = Math.PI * (3 * (a + b) - Math.sqrt((3 * a + b) * (a + 3 * b)));
-        int meridians = Math.max(4, (int) Math.ceil(equator));
+        int meridians = Math.max(4, (int) Math.ceil(equator / spacing));
         for (int i = 0; i < meridians && !collector.overflow; i++) {
             double phi = full * i / meridians;
             double cos = Math.cos(phi), sin = Math.sin(phi);
-            collector.ellipseArc(cx, cy, cz, 0, ry, 0, rx * cos, 0, rz * sin, 0, Math.PI, false);
+            collector.ellipseArc(cx, cy, cz, 0, ry, 0, rx * cos, 0, rz * sin, 0, Math.PI, false, true);
         }
     }
 
