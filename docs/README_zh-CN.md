@@ -102,6 +102,10 @@ git rebase upstream/dev
 | `EntityTag.pose` | 属性 | 新增 |
 | `EntityTag.profile` | 属性 | 新增 |
 | `EntityTag.skin_layers` | 标签 / 机制 | 修改 |
+| `areadisplay` | 命令 | 新增 |
+| `<server.area_displays>` | 标签 | 新增 |
+| `<server.area_display[<id>]>` | 标签 | 新增 |
+| `<PlayerTag.area_display_ids>` | 标签 | 新增 |
 | 离线玩家的物品栏编辑 | 行为 | 修复 |
 | `EntityTag` 中仅适用于生物实体的机制 | 机制 | 修复 |
 | `projectile launched` | 事件 | 修复 |
@@ -134,6 +138,8 @@ git rebase upstream/dev
 **CraftEngine 的容器。** CraftEngine 自带 Denizen 集成，却没有读取容器内容的途径，相关请求也已[被拒绝](https://github.com/Xiao-MoMi/craft-engine/issues/810)，理由是这些容器属于注册的自定义行为而非通用功能。现补上 11 个标签，覆盖可定义容器的三种行为：`drawer_block`、`simple_storage_block` 与 `simple_storage_furniture`。存储类标签返回的是实时容器，写入即时生效。各标签均可选填 data key，与行为的 `data_key` 配置项按原样精确匹配；不填时取方块或家具上声明的第一个容器，`..._data_keys` 一系则按同一顺序列出全部。家具未配置 `data_key` 时，标签返回其内容实际所在的键——CraftEngine 仅在读写存档时才回落到默认值。另需留意 `ce_drawer_max_quantity` 随所存物品变化：配置为 32 组的抽屉在空置时返回 32，放入物品后返回 32 乘以该物品的最大堆叠数；兼容模式例外，恒返回所配置的组数。以上均不产生编译期依赖——CraftEngine 全程经其自身的类加载器反射访问，成员先按名、再按类型查找，仅被改名不影响使用；若 CraftEngine 重整了这些内部结构，相应的一组标签只是不再注册而已。
 
 **mannequin 的属性。** 上游 Denizen 完全未涉及此类实体，原版在其上提供的种种设定，脚本一概够不着——经 `disguise ... as:mannequin[...]` 时尤其如此，伪装体由 Denizen 内部创建，任何命令都触及不到。现补上五个属性：`description` 替换名称下方本应显示记分板分数的那一行，不给定内容则恢复默认；`hide_description` 将那一行整个隐去，默认显示的 “NPC” 由此可以去掉；`immovable` 使其不被推动；`main_hand` 更换持物的手；`pose` 设定所取的姿势；`profile` 设定所用的皮肤，以一个 MapTag 给出，可含玩家名、UUID、base64 贴图串，或者身体、披风、鞘翅的贴图键与手臂宽度（按原版写 WIDE、SLIM，或按 Bukkit 写 CLASSIC、SLIM 皆可）。给名字或 UUID 则由客户端自行查取，皮肤稍后才到；给贴图则即刻生效。`profile` 仅 Paper 可用，Spigot 的档案类型压根表达不了这些贴图覆盖项。均需 Minecraft 1.21.9 及以上版本。`<EntityTag.skin_layers>` 及同名机制现也接受 mannequin，外层皮肤的开关与玩家同一写法——mannequin 与玩家同为 Avatar 的派生，这些层存于同一个同步字节中。并无此项的实体不再抛出转型异常，而是直言告知。其中数项在 Spigot 与 Paper 上的接口互不兼容，故经 Denizen 既有的两侧分派实现。
+
+**区域显示。** 上游想让玩家看清一块区域的范围，只能在脚本里循环逐点播放粒子，区域一大开销便相当可观，用完还得自行收拾。`areadisplay` 仿照 [WorldEditSUI](https://github.com/kennytv/WorldEditSUI) 的选区轮廓，以粒子描出长方体、多边形或椭球体的边框并持续重绘，直至到期或被移除；表面另可加画网格，随时经 `update` 开关。其用法与本 Fork 的 `bossbar` 一脉相承：以 ID 区分，提供 `auto`、`create`、`update`、`remove` 四种操作，不给出 `players:` 即展示给全服玩家，其后加入的玩家同样可见。粒子点在创建或更新时一次算好，每次重绘只向观看者发送其 `range:` 范围以内的部分；范围超出原版客户端渲染普通粒子的 32 格时，改为强制发送。区域显示仅存于内存，服务器重启后即告清空。WorldEditSUI 以 GPL 授权，本实现系独立编写，未取用其任何代码。
 
 ### 修复
 
