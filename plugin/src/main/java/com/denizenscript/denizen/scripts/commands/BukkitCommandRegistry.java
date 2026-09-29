@@ -159,6 +159,7 @@ public class BukkitCommandRegistry {
         // world
         registerCommand(AdjustBlockCommand.class);
         registerCommand(AnimateChestCommand.class);
+        registerCommand(AreaDisplayCommand.class);
         registerCommand(ChunkLoadCommand.class);
         registerCommand(CopyBlockCommand.class);
         registerCommand(CreateWorldCommand.class);

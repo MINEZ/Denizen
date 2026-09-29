@@ -8,6 +8,7 @@ import com.denizenscript.denizen.nms.interfaces.ItemHelper;
 import com.denizenscript.denizen.npc.traits.AssignmentTrait;
 import com.denizenscript.denizen.objects.*;
 import com.denizenscript.denizen.scripts.commands.server.BossBarCommand;
+import com.denizenscript.denizen.scripts.commands.world.AreaDisplayCommand;
 import com.denizenscript.denizen.scripts.containers.core.AssignmentScriptContainer;
 import com.denizenscript.denizen.scripts.containers.core.CommandScriptHelper;
 import com.denizenscript.denizen.scripts.containers.core.ItemScriptHelper;
@@ -1657,6 +1658,39 @@ public class ServerTagBase extends PseudoObjectTagBase<ServerTagBase> {
                 viewers.addObject(new PlayerTag(player));
             }
             return viewers;
+        });
+
+        // <--[tag]
+        // @attribute <server.area_displays>
+        // @returns ListTag
+        // @description
+        // Returns a list of all current area display IDs from <@link command areadisplay>.
+        // -->
+        tagProcessor.registerTag(ListTag.class, "area_displays", (attribute, context) -> {
+            return new ListTag(AreaDisplayCommand.displays.keySet(), true);
+        });
+
+        // <--[tag]
+        // @attribute <server.area_display[<id>]>
+        // @returns MapTag
+        // @description
+        // Returns the details of the given area display ID from <@link command areadisplay>, as a map with keys:
+        // "id": the display's ID.
+        // "area": the snapshot of the area being displayed.
+        // "all_players": whether the display is shown to every player on the server, including later joins.
+        // "players": a list of the players the display is shown to. For a server-wide display, this is every online player.
+        // "duration": the remaining duration, only present if the display has one.
+        // "particle": the particle name.
+        // "special_data": the particle's special_data map, only present if it has one.
+        // "density", "interval", "range", "grid": the current settings of the display.
+        // "points": the total number of particles in one full drawing of the display.
+        // -->
+        tagProcessor.registerTag(MapTag.class, ElementTag.class, "area_display", (attribute, object, input) -> {
+            AreaDisplayCommand.AreaDisplay display = AreaDisplayCommand.displays.get(input.asLowerString());
+            if (display == null) {
+                return null;
+            }
+            return display.describe();
         });
 
         // <--[tag]
