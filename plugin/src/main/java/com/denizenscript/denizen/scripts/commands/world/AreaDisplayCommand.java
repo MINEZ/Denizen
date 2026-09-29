@@ -912,6 +912,27 @@ public class AreaDisplayCommand extends AbstractCommand {
         }.runTaskTimer(Denizen.getInstance(), 1, 1);
     }
 
+    /**
+     * 插件停用时调用：清空所有显示并立即关闭后台线程。
+     * <p>
+     * Bukkit 停用插件时只会取消主线程上的绘制任务，后台线程不受其管，
+     * 若不在此关闭，服务器停止期间仍会向正在断开的连接发包，热重载插件后还会留下一条空转的线程。
+     */
+    public static void shutdown() {
+        for (AreaDisplay display : displays.values()) {
+            display.removed = true;
+        }
+        displays.clear();
+        if (drawTask != null) {
+            drawTask.cancel();
+            drawTask = null;
+        }
+        if (sender != null) {
+            sender.shutdownNow();
+            sender = null;
+        }
+    }
+
     public static void tickDisplays() {
         currentTick++;
         Iterator<AreaDisplay> iterator = displays.values().iterator();
