@@ -139,7 +139,7 @@ git rebase upstream/dev
 
 **mannequin 的属性。** 上游 Denizen 完全未涉及此类实体，原版在其上提供的种种设定，脚本一概够不着——经 `disguise ... as:mannequin[...]` 时尤其如此，伪装体由 Denizen 内部创建，任何命令都触及不到。现补上五个属性：`description` 替换名称下方本应显示记分板分数的那一行，不给定内容则恢复默认；`hide_description` 将那一行整个隐去，默认显示的 “NPC” 由此可以去掉；`immovable` 使其不被推动；`main_hand` 更换持物的手；`pose` 设定所取的姿势；`profile` 设定所用的皮肤，以一个 MapTag 给出，可含玩家名、UUID、base64 贴图串，或者身体、披风、鞘翅的贴图键与手臂宽度（按原版写 WIDE、SLIM，或按 Bukkit 写 CLASSIC、SLIM 皆可）。给名字或 UUID 则由客户端自行查取，皮肤稍后才到；给贴图则即刻生效。`profile` 仅 Paper 可用，Spigot 的档案类型压根表达不了这些贴图覆盖项。均需 Minecraft 1.21.9 及以上版本。`<EntityTag.skin_layers>` 及同名机制现也接受 mannequin，外层皮肤的开关与玩家同一写法——mannequin 与玩家同为 Avatar 的派生，这些层存于同一个同步字节中。并无此项的实体不再抛出转型异常，而是直言告知。其中数项在 Spigot 与 Paper 上的接口互不兼容，故经 Denizen 既有的两侧分派实现。
 
-**区域显示。** 上游想让玩家看清一块区域的范围，只能在脚本里循环逐点播放粒子，区域一大开销便相当可观，用完还得自行收拾。`areadisplay` 仿照 [WorldEditSUI](https://github.com/kennytv/WorldEditSUI) 的选区轮廓，以粒子描出长方体、多边形或椭球体的边框并持续重绘，直至到期或被移除；表面另可加画网格，随时经 `update` 开关。其用法与本 Fork 的 `bossbar` 一脉相承：以 ID 区分，提供 `auto`、`create`、`update`、`remove` 四种操作，不给出 `players:` 即展示给全服玩家，其后加入的玩家同样可见。粒子点在创建或更新时一次算好，每次重绘只向观看者发送其 `range:` 范围以内的部分；范围超出原版客户端渲染普通粒子的 32 格时，改为强制发送。区域显示仅存于内存，服务器重启后即告清空。WorldEditSUI 以 GPL 授权，本实现系独立编写，未取用其任何代码。
+**区域显示。** 上游想让玩家看清一块区域的范围，只能在脚本里循环逐点播放粒子，区域一大开销便相当可观，用完还得自行收拾。`areadisplay` 仿照 [WorldEditSUI](https://github.com/kennytv/WorldEditSUI) 的选区轮廓，以粒子描出长方体、多边形或椭球体的边框并持续重绘，直至到期或被移除；表面另可加画网格，随时经 `update` 开关；网格也与 WorldEditSUI 一样随表面增大而放宽间距，区域再大也不至于满眼粒子。其用法与本 Fork 的 `bossbar` 一脉相承：以 ID 区分，提供 `auto`、`create`、`update`、`remove` 四种操作，不给出 `players:` 即展示给全服玩家，其后加入的玩家同样可见。粒子点在创建或更新时一次算好，每次重绘只向观看者发送其 `range:` 范围以内的部分；范围超出原版客户端渲染普通粒子的 32 格时，改为强制发送。区域显示仅存于内存，服务器重启后即告清空。WorldEditSUI 以 GPL 授权，本实现系独立编写，未取用其任何代码。
 
 ### 修复
 
