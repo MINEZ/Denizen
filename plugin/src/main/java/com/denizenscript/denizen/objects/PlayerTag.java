@@ -11,6 +11,7 @@ import com.denizenscript.denizen.scripts.commands.player.DisguiseCommand;
 import com.denizenscript.denizen.scripts.commands.player.ExperienceCommand;
 import com.denizenscript.denizen.scripts.commands.player.SidebarCommand;
 import com.denizenscript.denizen.scripts.commands.server.BossBarCommand;
+import com.denizenscript.denizen.scripts.commands.world.AreaDisplayCommand;
 import com.denizenscript.denizen.tags.core.PlayerTagBase;
 import com.denizenscript.denizen.utilities.*;
 import com.denizenscript.denizen.utilities.blocks.FakeBlock;
@@ -2529,6 +2530,24 @@ public class PlayerTag implements ObjectTag, Adjustable, EntityFormObject, Flagg
             for (Map.Entry<String, BossBar> bar : BossBarCommand.bossBarMap.entrySet()) {
                 if (bar.getValue().getPlayers().contains(object.getPlayerEntity())) {
                     result.addObject(new ElementTag(bar.getKey(), true));
+                }
+            }
+            return result;
+        });
+
+        // <--[tag]
+        // @attribute <PlayerTag.area_display_ids>
+        // @returns ListTag
+        // @description
+        // Returns a list of all area displays from <@link command areadisplay> that are shown to this player,
+        // including server-wide ones, regardless of which world the player is in.
+        // -->
+        tagProcessor.registerTag(ListTag.class, "area_display_ids", (attribute, object) -> {
+            ListTag result = new ListTag();
+            UUID uuid = object.getUUID();
+            for (AreaDisplayCommand.AreaDisplay display : AreaDisplayCommand.displays.values()) {
+                if (display.isViewer(uuid)) {
+                    result.addObject(new ElementTag(display.id, true));
                 }
             }
             return result;
