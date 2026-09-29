@@ -22,22 +22,25 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class AreaDisplayCommand extends AbstractCommand {
 
     public AreaDisplayCommand() {
         setName("areadisplay");
-        setSyntax("areadisplay ({auto}/create/update/remove) [<id>|...] (area:<area>) (players:<player>|...) (duration:<duration>) (particle:<particle>) (special_data:<map>) (density:<#>) (interval:<duration>) (range:<#.#>) (grid:<true/false>)");
-        setRequiredArguments(1, 11);
+        setSyntax("areadisplay ({auto}/create/update/remove) [<id>|...] (area:<area>) (players:<player>|...) (duration:<duration>) (particle:<particle>) (special_data:<map>) (density:<#>) (interval:<duration>) (range:<#.#>) (max_particles:<#>) (grid:<true/false>)");
+        setRequiredArguments(1, 12);
         isProcedural = false;
         autoCompile();
     }
 
     // <--[command]
     // @Name AreaDisplay
-    // @Syntax areadisplay ({auto}/create/update/remove) [<id>|...] (area:<area>) (players:<player>|...) (duration:<duration>) (particle:<particle>) (special_data:<map>) (density:<#>) (interval:<duration>) (range:<#.#>) (grid:<true/false>)
+    // @Syntax areadisplay ({auto}/create/update/remove) [<id>|...] (area:<area>) (players:<player>|...) (duration:<duration>) (particle:<particle>) (special_data:<map>) (density:<#>) (interval:<duration>) (range:<#.#>) (max_particles:<#>) (grid:<true/false>)
     // @Required 1
-    // @Maximum 11
+    // @Maximum 12
     // @Short Outlines an area with particles for players to see.
     // @Group world
     //
@@ -68,7 +71,7 @@ public class AreaDisplayCommand extends AbstractCommand {
     // Optionally, specify a duration, after which the display removes itself. If unspecified, the display stays until removed.
     // Specifying a duration when updating a display restarts its countdown. A duration of 0 makes the display permanent.
     //
-    // Optionally, specify the particle to draw with. Defaults to 'end_rod'.
+    // Optionally, specify the particle to draw with. Defaults to 'flame', which fades quickly enough that successive redraws do not pile up.
     // Particles that need extra data take it through 'special_data', in the same map format as <@link command PlayEffect>.
     // If the particle is changed while updating without giving new special_data, the previous special_data carries over to the new particle, so it must suit that particle as well.
     // It is dropped instead if the new particle takes no special_data.
@@ -80,6 +83,12 @@ public class AreaDisplayCommand extends AbstractCommand {
     // Optionally, specify the range, in blocks: a viewer is only sent the particles within this distance of them. Defaults to 32.
     // Vanilla clients do not render ordinary particles further than 32 blocks away, so for a range above 32 the particles are forced,
     // which also makes clients render them regardless of their particle settings.
+    //
+    // Optionally, specify the maximum number of particles a viewer is sent per redraw. Defaults to 1000.
+    // When more points than that are in range, the ones nearest to the viewer are sent and the rest are skipped for that redraw.
+    //
+    // Each redraw is spread out over its interval rather than sent all at once: every tick sends an even share of the particles,
+    // interleaved so each share covers the whole display. Picking and sending the particles happens off the main thread.
     //
     // Optionally, specify 'grid:true' to additionally draw a grid on the surface of the area.
     // The grid gets sparser as the surface gets bigger: its lines are spaced one block apart, plus one more block for every 256 square blocks
@@ -138,6 +147,12 @@ public class AreaDisplayCommand extends AbstractCommand {
     /** 网格间距的上限，再宽就看不出是网格了。 */
     public static final int MAX_GRID_SPACING = 30;
 
+    /** 每位观看者每次重绘默认最多收到的粒子数。 */
+    public static final int DEFAULT_MAX_PARTICLES = 1000;
+
+    /** 一刻的毫秒数，用于把一次重绘分摊到各刻发出。 */
+    public static final long TICK_MILLIS = 50;
+
     /** 空间分桶的边长，与区块段一致。 */
     public static final int BUCKET_SIZE = 16;
 
@@ -155,6 +170,27 @@ public class AreaDisplayCommand extends AbstractCommand {
     public static long currentTick = 0;
 
     public static BukkitTask drawTask = null;
+
+    /**
+     * 挑选并发送粒子的后台线程。
+     * <p>
+     * 主线程每次重绘只记下观看者的位置，挑点、排序与发包都在这里完成，并按刻分摊。
+     * 发粒子包只是把数据包交给玩家的网络连接，Paper 下可在任意线程调用。
+     */
+    public static ScheduledThreadPoolExecutor sender = null;
+
+    public static ScheduledThreadPoolExecutor getSender() {
+        if (sender == null || sender.isShutdown()) {
+            sender = new ScheduledThreadPoolExecutor(1, runnable -> {
+                Thread thread = new Thread(runnable, "Denizen AreaDisplay Sender");
+                thread.setDaemon(true);
+                return thread;
+            });
+            // 显示全部移除后即关闭线程，尚未发出的分摊批次随之作废。
+            sender.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
+        }
+        return sender;
+    }
 
     /**
      * 一个区域显示。
@@ -192,6 +228,11 @@ public class AreaDisplayCommand extends AbstractCommand {
 
         public boolean grid;
 
+        public int maxParticles;
+
+        /** 已被移除，后台线程据此放弃尚未发出的分摊批次。 */
+        public volatile boolean removed = false;
+
         /** 到期的内部刻，小于 0 表示永久显示。 */
         public long expireTick = -1;
 
@@ -205,32 +246,28 @@ public class AreaDisplayCommand extends AbstractCommand {
             return forAllPlayers || players.contains(uuid);
         }
 
+        /**
+         * 在主线程记下各观看者此刻的位置，再交给后台线程挑点与发送。
+         * 桶列表在更新时整体替换、此后不再改动，故可直接交给后台线程读取。
+         */
         public void draw() {
             World world = Bukkit.getWorld(worldName);
             if (world == null) {
                 return;
             }
-            boolean force = range > VANILLA_PARTICLE_RANGE;
-            double rangeSquared = range * range;
+            List<ViewerSnapshot> viewers = new ArrayList<>();
             for (Player player : world.getPlayers()) {
-                if (!isViewer(player.getUniqueId())) {
-                    continue;
-                }
-                Location location = player.getLocation();
-                double px = location.getX(), py = location.getY(), pz = location.getZ();
-                for (PointBucket bucket : buckets) {
-                    if (bucket.distanceSquaredTo(px, py, pz) > rangeSquared) {
-                        continue;
-                    }
-                    double[] coords = bucket.coords;
-                    for (int i = 0; i < bucket.size; i += 3) {
-                        double dx = coords[i] - px, dy = coords[i + 1] - py, dz = coords[i + 2] - pz;
-                        if (dx * dx + dy * dy + dz * dz <= rangeSquared) {
-                            player.spawnParticle(particle, coords[i], coords[i + 1], coords[i + 2], 1, 0, 0, 0, 0, particleData, force);
-                        }
-                    }
+                if (isViewer(player.getUniqueId())) {
+                    Location location = player.getLocation();
+                    viewers.add(new ViewerSnapshot(player, location.getX(), location.getY(), location.getZ()));
                 }
             }
+            if (viewers.isEmpty()) {
+                return;
+            }
+            ScheduledThreadPoolExecutor executor = getSender();
+            DrawJob job = new DrawJob(this, executor, viewers, buckets, particle, particleData, range, maxParticles, interval);
+            executor.execute(job::select);
         }
 
         public MapTag describe() {
@@ -260,9 +297,153 @@ public class AreaDisplayCommand extends AbstractCommand {
             result.putObject("density", new ElementTag(density));
             result.putObject("interval", new DurationTag((long) interval));
             result.putObject("range", new ElementTag(range));
+            result.putObject("max_particles", new ElementTag(maxParticles));
             result.putObject("grid", new ElementTag(grid));
             result.putObject("points", new ElementTag(pointCount));
             return result;
+        }
+    }
+
+    public record ViewerSnapshot(Player player, double x, double y, double z) {
+    }
+
+    /**
+     * 一次重绘，在后台线程执行。
+     * <p>
+     * 先为每位观看者挑出范围内的点，超出上限时只留最近的那些；
+     * 再把一次重绘拆成与间隔刻数相同的批次，第 k 批取序号除以批数余 k 的点，于第 k 刻发出，
+     * 使每一批都均匀覆盖整个显示，而非一刻内把全部粒子挤在一起发出。
+     */
+    public static class DrawJob {
+
+        public final AreaDisplay display;
+
+        /** 由主线程传入，后台线程不得自行调用 getSender()，以免与主线程关闭、重建线程池的操作相互竞争。 */
+        public final ScheduledThreadPoolExecutor executor;
+
+        public final List<ViewerSnapshot> viewers;
+
+        public final List<PointBucket> buckets;
+
+        public final Particle particle;
+
+        public final Object particleData;
+
+        public final double range;
+
+        public final int maxParticles;
+
+        public final int slices;
+
+        public final boolean force;
+
+        /** 各观看者选中的点，坐标按 x、y、z 依次平铺，与 viewers 一一对应。 */
+        public final List<double[]> selections = new ArrayList<>();
+
+        public DrawJob(AreaDisplay display, ScheduledThreadPoolExecutor executor, List<ViewerSnapshot> viewers, List<PointBucket> buckets, Particle particle, Object particleData,
+                       double range, int maxParticles, int interval) {
+            this.display = display;
+            this.executor = executor;
+            this.viewers = viewers;
+            this.buckets = buckets;
+            this.particle = particle;
+            this.particleData = particleData;
+            this.range = range;
+            this.maxParticles = maxParticles;
+            this.slices = Math.max(1, interval);
+            this.force = range > VANILLA_PARTICLE_RANGE;
+        }
+
+        /** 线程池会吞掉任务抛出的异常，故在此自行报告。 */
+        public void reportError(Throwable ex) {
+            Debug.echoError("Area display '" + display.id + "' failed to draw:");
+            Debug.echoError(ex);
+        }
+
+        public void select() {
+            if (display.removed) {
+                return;
+            }
+            try {
+                for (ViewerSnapshot viewer : viewers) {
+                    selections.add(selectFor(viewer));
+                }
+            }
+            catch (Throwable ex) {
+                reportError(ex);
+                return;
+            }
+            try {
+                for (int slice = 0; slice < slices; slice++) {
+                    int current = slice;
+                    executor.schedule(() -> sendSlice(current), slice * TICK_MILLIS, TimeUnit.MILLISECONDS);
+                }
+            }
+            catch (RejectedExecutionException ex) {
+                // 线程池已在显示全部移除时关闭，这一轮不必再发。
+            }
+        }
+
+        public double[] selectFor(ViewerSnapshot viewer) {
+            double rangeSquared = range * range;
+            double[] coords = new double[48];
+            float[] distances = new float[16];
+            int count = 0;
+            for (PointBucket bucket : buckets) {
+                if (bucket.distanceSquaredTo(viewer.x(), viewer.y(), viewer.z()) > rangeSquared) {
+                    continue;
+                }
+                double[] points = bucket.coords;
+                for (int i = 0; i < bucket.size; i += 3) {
+                    double dx = points[i] - viewer.x(), dy = points[i + 1] - viewer.y(), dz = points[i + 2] - viewer.z();
+                    double distanceSquared = dx * dx + dy * dy + dz * dz;
+                    if (distanceSquared > rangeSquared) {
+                        continue;
+                    }
+                    if (count == distances.length) {
+                        distances = Arrays.copyOf(distances, count * 2);
+                        coords = Arrays.copyOf(coords, count * 6);
+                    }
+                    distances[count] = (float) distanceSquared;
+                    System.arraycopy(points, i, coords, count * 3, 3);
+                    count++;
+                }
+            }
+            if (count <= maxParticles) {
+                return Arrays.copyOf(coords, count * 3);
+            }
+            // 非负 float 的位模式与其数值同序，把距离放在高 32 位、序号放在低 32 位，排一次 long 数组即得由近及远的次序。
+            long[] order = new long[count];
+            for (int i = 0; i < count; i++) {
+                order[i] = ((long) Float.floatToRawIntBits(distances[i]) << 32) | i;
+            }
+            Arrays.sort(order);
+            double[] result = new double[maxParticles * 3];
+            for (int i = 0; i < maxParticles; i++) {
+                System.arraycopy(coords, (int) order[i] * 3, result, i * 3, 3);
+            }
+            return result;
+        }
+
+        public void sendSlice(int slice) {
+            if (display.removed) {
+                return;
+            }
+            try {
+                for (int v = 0; v < viewers.size(); v++) {
+                    Player player = viewers.get(v).player();
+                    if (!player.isOnline()) {
+                        continue;
+                    }
+                    double[] points = selections.get(v);
+                    for (int i = slice * 3; i < points.length; i += slices * 3) {
+                        player.spawnParticle(particle, points[i], points[i + 1], points[i + 2], 1, 0, 0, 0, 0, particleData, force);
+                    }
+                }
+            }
+            catch (Throwable ex) {
+                reportError(ex);
+            }
         }
     }
 
@@ -716,6 +897,7 @@ public class AreaDisplayCommand extends AbstractCommand {
         while (iterator.hasNext()) {
             AreaDisplay display = iterator.next();
             if (display.expireTick >= 0 && currentTick >= display.expireTick) {
+                display.removed = true;
                 iterator.remove();
                 continue;
             }
@@ -727,6 +909,7 @@ public class AreaDisplayCommand extends AbstractCommand {
                 catch (Throwable ex) {
                     Debug.echoError("Area display '" + display.id + "' failed to draw, and has been removed:");
                     Debug.echoError(ex);
+                    display.removed = true;
                     iterator.remove();
                 }
             }
@@ -734,6 +917,10 @@ public class AreaDisplayCommand extends AbstractCommand {
         if (displays.isEmpty() && drawTask != null) {
             drawTask.cancel();
             drawTask = null;
+            if (sender != null) {
+                sender.shutdown();
+                sender = null;
+            }
         }
     }
 
@@ -748,6 +935,7 @@ public class AreaDisplayCommand extends AbstractCommand {
                                    @ArgName("density") @ArgPrefixed @ArgDefaultNull ElementTag densityInput,
                                    @ArgName("interval") @ArgPrefixed @ArgDefaultNull DurationTag intervalInput,
                                    @ArgName("range") @ArgPrefixed @ArgDefaultNull ElementTag rangeInput,
+                                   @ArgName("max_particles") @ArgPrefixed @ArgDefaultNull ElementTag maxParticlesInput,
                                    @ArgName("grid") @ArgPrefixed @ArgDefaultNull ElementTag gridInput) {
         if (ids.isEmpty()) {
             throw new InvalidArgumentsRuntimeException("Must specify at least one ID.");
@@ -782,7 +970,7 @@ public class AreaDisplayCommand extends AbstractCommand {
         if (area != null && area.getWorld() == null) {
             throw new InvalidArgumentsRuntimeException("Area '" + area + "' is not in a valid world.");
         }
-        Particle particle = existing == null ? Particle.END_ROD : existing.particle;
+        Particle particle = existing == null ? Particle.FLAME : existing.particle;
         if (particleInput != null) {
             particle = Utilities.elementToEnumlike(particleInput, Particle.class);
             if (particle == null) {
@@ -825,6 +1013,13 @@ public class AreaDisplayCommand extends AbstractCommand {
                 throw new InvalidArgumentsRuntimeException("Range must be a number above 0.");
             }
             range = rangeInput.asDouble();
+        }
+        int maxParticles = existing == null ? DEFAULT_MAX_PARTICLES : existing.maxParticles;
+        if (maxParticlesInput != null) {
+            if (!maxParticlesInput.isInt() || maxParticlesInput.asInt() < 1) {
+                throw new InvalidArgumentsRuntimeException("Max particles must be a whole number above 0.");
+            }
+            maxParticles = maxParticlesInput.asInt();
         }
         boolean grid = existing != null && existing.grid;
         if (gridInput != null) {
@@ -875,6 +1070,7 @@ public class AreaDisplayCommand extends AbstractCommand {
         }
         display.interval = interval;
         display.range = range;
+        display.maxParticles = maxParticles;
         display.grid = grid;
         displays.put(id, display);
         ensureDrawTask();
@@ -887,6 +1083,7 @@ public class AreaDisplayCommand extends AbstractCommand {
             return;
         }
         if (players == null) {
+            display.removed = true;
             displays.remove(id);
             return;
         }
