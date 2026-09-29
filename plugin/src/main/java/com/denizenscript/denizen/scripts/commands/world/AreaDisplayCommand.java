@@ -87,8 +87,8 @@ public class AreaDisplayCommand extends AbstractCommand {
     // Optionally, specify the maximum number of particles a viewer is sent per redraw. Defaults to 1000.
     // When more points than that are in range, the ones nearest to the viewer are sent and the rest are skipped for that redraw.
     //
-    // Each redraw is spread out over its interval rather than sent all at once: every tick sends an even share of the particles,
-    // interleaved so each share covers the whole display. Picking and sending the particles happens off the main thread.
+    // Each redraw is spread out over its interval, up to 1 second, rather than sent all at once: every tick sends an even share of the particles,
+    // interleaved so each share covers the whole display. A redraw is skipped if the previous one is still being picked. Picking and sending the particles happens off the main thread.
     //
     // Optionally, specify 'grid:true' to additionally draw a grid on the surface of the area.
     // The grid gets sparser as the surface gets bigger: its lines are spaced one block apart, plus one more block for every 256 square blocks
@@ -152,6 +152,9 @@ public class AreaDisplayCommand extends AbstractCommand {
 
     /** 一刻的毫秒数，用于把一次重绘分摊到各刻发出。 */
     public static final long TICK_MILLIS = 50;
+
+    /** 一次重绘至多分摊的批数，即至多分摊到 1 秒。间隔再长也不必拖得更久，免得线程池里积压大量待发的批次。 */
+    public static final int MAX_SLICES = 20;
 
     /** 空间分桶的边长，与区块段一致。 */
     public static final int BUCKET_SIZE = 16;
@@ -233,6 +236,12 @@ public class AreaDisplayCommand extends AbstractCommand {
         /** 已被移除，后台线程据此放弃尚未发出的分摊批次。 */
         public volatile boolean removed = false;
 
+        /** 上一轮尚在后台挑点，主线程据此跳过这一轮，免得后台跟不上时任务越积越多。 */
+        public volatile boolean selecting = false;
+
+        /** 后台线程已报告过错误，此后同类错误不再重复刷屏。 */
+        public volatile boolean errorReported = false;
+
         /** 到期的内部刻，小于 0 表示永久显示。 */
         public long expireTick = -1;
 
@@ -262,11 +271,12 @@ public class AreaDisplayCommand extends AbstractCommand {
                     viewers.add(new ViewerSnapshot(player, location.getX(), location.getY(), location.getZ()));
                 }
             }
-            if (viewers.isEmpty()) {
+            if (viewers.isEmpty() || selecting) {
                 return;
             }
+            selecting = true;
             ScheduledThreadPoolExecutor executor = getSender();
-            DrawJob job = new DrawJob(this, executor, viewers, buckets, particle, particleData, range, maxParticles, interval);
+            DrawJob job = new DrawJob(this, executor, world, viewers, buckets, particle, particleData, range, maxParticles, interval);
             executor.execute(job::select);
         }
 
@@ -321,6 +331,8 @@ public class AreaDisplayCommand extends AbstractCommand {
         /** 由主线程传入，后台线程不得自行调用 getSender()，以免与主线程关闭、重建线程池的操作相互竞争。 */
         public final ScheduledThreadPoolExecutor executor;
 
+        public final World world;
+
         public final List<ViewerSnapshot> viewers;
 
         public final List<PointBucket> buckets;
@@ -340,31 +352,36 @@ public class AreaDisplayCommand extends AbstractCommand {
         /** 各观看者选中的点，坐标按 x、y、z 依次平铺，与 viewers 一一对应。 */
         public final List<double[]> selections = new ArrayList<>();
 
-        public DrawJob(AreaDisplay display, ScheduledThreadPoolExecutor executor, List<ViewerSnapshot> viewers, List<PointBucket> buckets, Particle particle, Object particleData,
+        public DrawJob(AreaDisplay display, ScheduledThreadPoolExecutor executor, World world, List<ViewerSnapshot> viewers, List<PointBucket> buckets, Particle particle, Object particleData,
                        double range, int maxParticles, int interval) {
             this.display = display;
             this.executor = executor;
+            this.world = world;
             this.viewers = viewers;
             this.buckets = buckets;
             this.particle = particle;
             this.particleData = particleData;
             this.range = range;
             this.maxParticles = maxParticles;
-            this.slices = Math.max(1, interval);
+            this.slices = Math.max(1, Math.min(interval, MAX_SLICES));
             this.force = range > VANILLA_PARTICLE_RANGE;
         }
 
-        /** 线程池会吞掉任务抛出的异常，故在此自行报告。 */
+        /** 线程池会吞掉任务抛出的异常，故在此自行报告；每个显示只报告第一次，以免每刻刷屏。 */
         public void reportError(Throwable ex) {
-            Debug.echoError("Area display '" + display.id + "' failed to draw:");
+            if (display.errorReported) {
+                return;
+            }
+            display.errorReported = true;
+            Debug.echoError("Area display '" + display.id + "' failed to draw (further errors from it will not be reported):");
             Debug.echoError(ex);
         }
 
         public void select() {
-            if (display.removed) {
-                return;
-            }
             try {
+                if (display.removed) {
+                    return;
+                }
                 for (ViewerSnapshot viewer : viewers) {
                     selections.add(selectFor(viewer));
                 }
@@ -372,6 +389,9 @@ public class AreaDisplayCommand extends AbstractCommand {
             catch (Throwable ex) {
                 reportError(ex);
                 return;
+            }
+            finally {
+                display.selecting = false;
             }
             try {
                 for (int slice = 0; slice < slices; slice++) {
@@ -432,7 +452,8 @@ public class AreaDisplayCommand extends AbstractCommand {
             try {
                 for (int v = 0; v < viewers.size(); v++) {
                     Player player = viewers.get(v).player();
-                    if (!player.isOnline()) {
+                    // 分摊期间下线或换了世界的观看者不再发送，免得粒子出现在另一个世界的同一坐标上。
+                    if (!player.isOnline() || player.getWorld() != world) {
                         continue;
                     }
                     double[] points = selections.get(v);
