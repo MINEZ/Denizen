@@ -10,7 +10,7 @@ A fork of [Denizen](https://github.com/DenizenScript/Denizen) maintained for the
 <br>
 
 <div>
-<a href="https://github.com/DenizenScript/Denizen"><img src="https://img.shields.io/badge/upstream-Denizen_1.3.3-1976d2" alt="upstream"></a>
+<a href="https://github.com/DenizenScript/Denizen"><img src="docs/badges/upstream.svg" alt="upstream"></a>
 <a href="#supported-versions"><img src="https://img.shields.io/badge/Minecraft-7%20versions-4caf50" alt="Minecraft"></a>
 <a href="LICENSE.txt"><img src="https://img.shields.io/badge/license-MIT-9e9e9e" alt="license"></a>
 </div>
