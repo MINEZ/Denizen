@@ -48,7 +48,7 @@ public class ImprovedOfflinePlayerImpl extends ImprovedOfflinePlayer {
     public static class OfflinePlayerInventory extends net.minecraft.world.entity.player.Inventory {
 
         public OfflinePlayerInventory(net.minecraft.world.entity.player.Player entityhuman) {
-            super(entityhuman, new EntityEquipment()); // TODO: 1.21.5: is the new Equipment right here?
+            super(entityhuman, new EntityEquipment());
         }
 
         @Override
@@ -91,7 +91,11 @@ public class ImprovedOfflinePlayerImpl extends ImprovedOfflinePlayer {
     public org.bukkit.inventory.PlayerInventory getInventory() {
         if (inventory == null) {
             net.minecraft.world.entity.player.Inventory newInv = new OfflinePlayerInventory(getFakeNmsPlayer());
-            Handler.useValueInput(NBTAdapter.toNMS(this.compound), valueInput -> newInv.load(valueInput.listOrEmpty("Inventory", ItemStackWithSlot.CODEC)));
+            Handler.useValueInput(NBTAdapter.toNMS(this.compound), valueInput -> {
+                newInv.load(valueInput.listOrEmpty("Inventory", ItemStackWithSlot.CODEC));
+                // 盔甲与副手自 1.21.5 起不再存于 "Inventory" 列表，而是单独存于 "equipment"，需一并读取，否则离线物品栏中看不到这些槽位。
+                valueInput.read("equipment", EntityEquipment.CODEC).ifPresent(newInv.equipment::setAll);
+            });
             inventory = new OfflineCraftInventoryPlayer(newInv);
         }
         return inventory;
@@ -100,7 +104,17 @@ public class ImprovedOfflinePlayerImpl extends ImprovedOfflinePlayer {
     @Override
     public void setInventory(org.bukkit.inventory.PlayerInventory inventory) {
         CraftInventoryPlayer inv = (CraftInventoryPlayer) inventory;
-        editData(valueOutput -> inv.getInventory().save(valueOutput.list("Inventory", ItemStackWithSlot.CODEC)));
+        editData(valueOutput -> {
+            inv.getInventory().save(valueOutput.list("Inventory", ItemStackWithSlot.CODEC));
+            // 与原版的存盘逻辑一致：装备为空时不写入 "equipment"，并移除原有的该项。
+            EntityEquipment nmsEquipment = inv.getInventory().equipment;
+            if (nmsEquipment.isEmpty()) {
+                valueOutput.discard("equipment");
+            }
+            else {
+                valueOutput.store("equipment", EntityEquipment.CODEC, nmsEquipment);
+            }
+        });
     }
 
     @Override
