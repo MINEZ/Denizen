@@ -47,8 +47,16 @@ public class ImprovedOfflinePlayerImpl extends ImprovedOfflinePlayer {
 
     public static class OfflinePlayerInventory extends net.minecraft.world.entity.player.Inventory {
 
+        /** 原版的 equipment 字段为私有，此处另存一份引用，供读写玩家数据中的 "equipment" 时使用。 */
+        public final EntityEquipment offlineEquipment;
+
         public OfflinePlayerInventory(net.minecraft.world.entity.player.Player entityhuman) {
-            super(entityhuman, new EntityEquipment());
+            this(entityhuman, new EntityEquipment());
+        }
+
+        private OfflinePlayerInventory(net.minecraft.world.entity.player.Player entityhuman, EntityEquipment equipment) {
+            super(entityhuman, equipment);
+            this.offlineEquipment = equipment;
         }
 
         @Override
@@ -90,11 +98,11 @@ public class ImprovedOfflinePlayerImpl extends ImprovedOfflinePlayer {
     @Override
     public org.bukkit.inventory.PlayerInventory getInventory() {
         if (inventory == null) {
-            net.minecraft.world.entity.player.Inventory newInv = new OfflinePlayerInventory(getFakeNmsPlayer());
+            OfflinePlayerInventory newInv = new OfflinePlayerInventory(getFakeNmsPlayer());
             Handler.useValueInput(NBTAdapter.toNMS(this.compound), valueInput -> {
                 newInv.load(valueInput.listOrEmpty("Inventory", ItemStackWithSlot.CODEC));
                 // 盔甲与副手自 1.21.5 起不再存于 "Inventory" 列表，而是单独存于 "equipment"，需一并读取，否则离线物品栏中看不到这些槽位。
-                valueInput.read("equipment", EntityEquipment.CODEC).ifPresent(newInv.equipment::setAll);
+                valueInput.read("equipment", EntityEquipment.CODEC).ifPresent(newInv.offlineEquipment::setAll);
             });
             inventory = new OfflineCraftInventoryPlayer(newInv);
         }
@@ -107,12 +115,13 @@ public class ImprovedOfflinePlayerImpl extends ImprovedOfflinePlayer {
         editData(valueOutput -> {
             inv.getInventory().save(valueOutput.list("Inventory", ItemStackWithSlot.CODEC));
             // 与原版的存盘逻辑一致：装备为空时不写入 "equipment"，并移除原有的该项。
-            EntityEquipment nmsEquipment = inv.getInventory().equipment;
-            if (nmsEquipment.isEmpty()) {
-                valueOutput.discard("equipment");
-            }
-            else {
-                valueOutput.store("equipment", EntityEquipment.CODEC, nmsEquipment);
+            if (inv.getInventory() instanceof OfflinePlayerInventory offlineInv) {
+                if (offlineInv.offlineEquipment.isEmpty()) {
+                    valueOutput.discard("equipment");
+                }
+                else {
+                    valueOutput.store("equipment", EntityEquipment.CODEC, offlineInv.offlineEquipment);
+                }
             }
         });
     }
