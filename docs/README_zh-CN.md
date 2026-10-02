@@ -106,6 +106,9 @@ git rebase upstream/dev
 | `<server.area_displays>` | 标签 | 新增 |
 | `<server.area_display[<id>]>` | 标签 | 新增 |
 | `<PlayerTag.area_display_ids>` | 标签 | 新增 |
+| `EntityTag.add_target_goal` | 机制 | 新增 |
+| `EntityTag.remove_target_goal` | 机制 | 新增 |
+| `<EntityTag.target_goals>` | 标签 | 新增 |
 | 离线玩家的物品栏编辑 | 行为 | 修复 |
 | `EntityTag` 中仅适用于生物实体的机制 | 机制 | 修复 |
 | `projectile launched` | 事件 | 修复 |
@@ -140,6 +143,8 @@ git rebase upstream/dev
 **mannequin 的属性。** 上游 Denizen 完全未涉及此类实体，原版在其上提供的种种设定，脚本一概够不着——经 `disguise ... as:mannequin[...]` 时尤其如此，伪装体由 Denizen 内部创建，任何命令都触及不到。现补上五个属性：`description` 替换名称下方本应显示记分板分数的那一行，不给定内容则恢复默认；`hide_description` 将那一行整个隐去，默认显示的 “NPC” 由此可以去掉；`immovable` 使其不被推动；`main_hand` 更换持物的手；`pose` 设定所取的姿势；`profile` 设定所用的皮肤，以一个 MapTag 给出，可含玩家名、UUID、base64 贴图串，或者身体、披风、鞘翅的贴图键与手臂宽度（按原版写 WIDE、SLIM，或按 Bukkit 写 CLASSIC、SLIM 皆可）。给名字或 UUID 则由客户端自行查取，皮肤稍后才到；给贴图则即刻生效。`profile` 仅 Paper 可用，Spigot 的档案类型压根表达不了这些贴图覆盖项。均需 Minecraft 1.21.9 及以上版本。`<EntityTag.skin_layers>` 及同名机制现也接受 mannequin，外层皮肤的开关与玩家同一写法——mannequin 与玩家同为 Avatar 的派生，这些层存于同一个同步字节中。并无此项的实体不再抛出转型异常，而是直言告知。其中数项在 Spigot 与 Paper 上的接口互不兼容，故经 Denizen 既有的两侧分派实现。
 
 **区域显示。** 上游想让玩家看清一块区域的范围，只能在脚本里循环逐点播放粒子，区域一大开销便相当可观，用完还得自行收拾。`areadisplay` 仿照 [WorldEditSUI](https://github.com/kennytv/WorldEditSUI) 的选区轮廓，以粒子描出长方体、多边形或椭球体的边框并持续重绘，直至到期或被移除；表面另可加画网格，随时经 `update` 开关；网格也与 WorldEditSUI 一样随表面增大而放宽间距，区域再大也不至于满眼粒子。其用法与本 Fork 的 `bossbar` 一脉相承：以 ID 区分，提供 `auto`、`create`、`update`、`remove` 四种操作，不给出 `players:` 即展示给全服玩家，其后加入的玩家同样可见。粒子点在创建或更新时一次算好，每次重绘只向观看者发送其 `range:` 范围以内的部分；范围超出原版客户端渲染普通粒子的 32 格时，改为强制发送。每位观看者每次至多收到 `max_particles:` 个粒子，由近及远取舍；一次重绘分摊到整个间隔（至多 1 秒）的各刻发出，而非一刻内集中发完，挑点与发包均在主线程以外进行。区域显示仅存于内存，服务器重启后即告清空。WorldEditSUI 以 GPL 授权，本实现系独立编写，未取用其任何代码。
+
+**索敌目标。** 上游只能经 `attack` 从外部为生物指定攻击目标：生物自己并不会去找，原版 AI 一旦改换或遗忘目标，脚本就得重新指定；而原版生物会主动寻找的，又只有各自写死的那几种实体。`add_target_goal` 经 Paper 的 Mob Goals API 为生物添加一个属于它自己的索敌目标，行为仿照原版“寻找玩家”的那一个：生物约每半秒在周围 `range` 格内搜索一次符合实体匹配器（如 `mannequin` 或 `entity_flagged:my_flag`）的生物实体，攻击其中最近的一个，并可要求必须看得见；目标死亡、离开范围、不再符合匹配器，或约 3 秒看不见后即告放弃。该目标与原版的索敌目标同处一个目标选择器，遵循同一套优先级：取默认优先级 3 时，僵尸仍优先攻击玩家（优先级 2），挨打后仍会转向攻击者（优先级 1）；数值取得更小，则优先攻击符合匹配器的实体。它不会选中无敌的实体与创造、旁观模式的玩家，也不会抢走脚本或其他插件直接指定的目标。索敌目标不随实体存盘，宜在 `entity added to world` 事件中添加；`remove_target_goal` 用于移除，`<EntityTag.target_goals>` 用于列出。仅对经 AI 目标选择攻击对象的生物有效，猪灵、疣猪兽、监守者等由“大脑”驱动的生物不受影响。
 
 ### 修复
 
