@@ -207,32 +207,30 @@ public class PlayerHelperImpl extends PlayerHelper {
         fake.entity = new EntityTag(entity.getBukkitEntity());
         fake.entity.isFake = true;
         fake.entity.isFakeValid = true;
-        List<TrackerData> trackers = new ArrayList<>();
+        Map<UUID, TrackerData> trackers = new LinkedHashMap<>();
         fake.triggerSpawnPacket = (player) -> {
-            ServerPlayer nmsPlayer = ((CraftPlayer) player.getPlayerEntity()).getHandle();
+            Player bukkitPlayer = player.getPlayerEntity();
+            if (bukkitPlayer == null) {
+                return;
+            }
+            UUID uuid = player.getUUID();
+            ServerPlayer nmsPlayer = ((CraftPlayer) bukkitPlayer).getHandle();
             ServerGamePacketListenerImpl conn = nmsPlayer.connection;
             final ServerEntity tracker = new ServerEntity(world.getHandle(), nmsEntity, UpdateInterval.periodic(1), true, new FakeEntitySynchronizer(conn), Set.of(conn));
             tracker.addPairing(nmsPlayer);
             final TrackerData data = new TrackerData(player, tracker);
-            trackers.add(data);
+            // 同一玩家此前的跟踪器就此作废，其定时任务会在下一 tick 察觉并退出。
+            trackers.put(uuid, data);
             if (autoTrack) {
                 new BukkitRunnable() {
-                    boolean wasOnline = true;
                     @Override
                     public void run() {
-                        if (!fake.entity.isFakeValid) {
+                        if (!fake.entity.isFakeValid || trackers.get(uuid) != data) {
                             cancel();
                             return;
                         }
                         if (player.isOnline()) {
-                            if (!wasOnline) {
-                                tracker.addPairing(((CraftPlayer) player.getPlayerEntity()).getHandle());
-                                wasOnline = true;
-                            }
                             tracker.sendChanges();
-                        }
-                        else if (wasOnline) {
-                            wasOnline = false;
                         }
                     }
                 }.runTaskTimer(Denizen.getInstance(), 1, 1);
@@ -241,15 +239,25 @@ public class PlayerHelperImpl extends PlayerHelper {
         for (PlayerTag player : players) {
             fake.triggerSpawnPacket.accept(player);
         }
+        fake.triggerRemovePlayer = (player) -> {
+            TrackerData removed = trackers.remove(player.getUUID());
+            if (removed == null) {
+                return;
+            }
+            Player bukkitPlayer = player.getPlayerEntity();
+            if (bukkitPlayer != null) {
+                removed.tracker.removePairing(((CraftPlayer) bukkitPlayer).getHandle());
+            }
+        };
         fake.triggerUpdatePacket = () -> {
-            for (TrackerData tracker : trackers) {
+            for (TrackerData tracker : trackers.values()) {
                 if (tracker.player.isOnline()) {
                     tracker.tracker.sendChanges();
                 }
             }
         };
         fake.triggerDestroyPacket = () -> {
-            for (TrackerData tracker : trackers) {
+            for (TrackerData tracker : trackers.values()) {
                 if (tracker.player.isOnline()) {
                     tracker.tracker.removePairing(((CraftPlayer) tracker.player.getPlayerEntity()).getHandle());
                 }
@@ -385,13 +393,13 @@ public class PlayerHelperImpl extends PlayerHelper {
     }
 
     @Override
-    public byte getSkinLayers(Player player) {
-        return ((CraftPlayer) player).getHandle().getEntityData().get(Avatar.DATA_PLAYER_MODE_CUSTOMISATION);
+    public byte getSkinLayers(Entity entity) {
+        return ((CraftEntity) entity).getHandle().getEntityData().get(Avatar.DATA_PLAYER_MODE_CUSTOMISATION);
     }
 
     @Override
-    public void setSkinLayers(Player player, byte flags) {
-        ((CraftPlayer) player).getHandle().getEntityData().set(Avatar.DATA_PLAYER_MODE_CUSTOMISATION, flags);
+    public void setSkinLayers(Entity entity, byte flags) {
+        ((CraftEntity) entity).getHandle().getEntityData().set(Avatar.DATA_PLAYER_MODE_CUSTOMISATION, flags);
     }
 
     @Override
