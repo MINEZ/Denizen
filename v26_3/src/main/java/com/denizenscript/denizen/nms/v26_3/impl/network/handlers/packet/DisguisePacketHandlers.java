@@ -98,6 +98,9 @@ public class DisguisePacketHandlers {
             }
         }
         else {
+            if (disguise.toOthers == null) { // 伪装体尚未建立（例如真身刚重新加入），原样放行。
+                return entityDataPacket;
+            }
             List<SynchedEntityData.DataValue<?>> data = ((CraftEntity) disguise.toOthers.entity.entity).getHandle().getEntityData().getNonDefaultValues();
             return data != null ? new ClientboundSetEntityDataPacket(entityDataPacket.id(), data) : null;
         }
@@ -105,8 +108,12 @@ public class DisguisePacketHandlers {
     }
 
     public static ClientboundUpdateAttributesPacket processAttributesPacket(DenizenNetworkManagerImpl networkManager, ClientboundUpdateAttributesPacket attributesPacket, DisguiseCommand.TrackedDisguise disguise) {
-        FakeEntity fake = attributesPacket.getEntityId() == networkManager.player.getId() ? disguise.fakeToSelf : disguise.toOthers;
-        return fake == null || fake.entity.entity instanceof LivingEntity ? attributesPacket : null; // Non-living entities don't have attributes
+        if (attributesPacket.getEntityId() == networkManager.player.getId()) {
+            // 自视伪装：玩家自身的移动预测系于这些属性，原样放行；伪装体并非生物时才丢弃。
+            return disguise.fakeToSelf == null || disguise.fakeToSelf.entity.entity instanceof LivingEntity ? attributesPacket : null;
+        }
+        // 伪装体的属性已在建立配对时一并发出，真身的属性包与之编号相同，放行只会将其覆盖。
+        return disguise.toOthers == null ? attributesPacket : null;
     }
 
     public static ClientboundTeleportEntityPacket processTeleportPacket(DenizenNetworkManagerImpl networkManager, ClientboundTeleportEntityPacket teleportEntityPacket, DisguiseCommand.TrackedDisguise disguise) throws IllegalAccessException {
@@ -119,7 +126,8 @@ public class DisguisePacketHandlers {
                     teleportEntityPacket.onGround()
             );
         }
-        return sendDisguiseForPacket(networkManager, teleportEntityPacket, disguise);
+        // 实体编号与真身相同，移动数据包交由客户端直接作用于伪装体即可。
+        return teleportEntityPacket;
     }
 
 
@@ -132,7 +140,8 @@ public class DisguisePacketHandlers {
                     rotPacket.isOnGround()
             );
         }
-        return sendDisguiseForPacket(networkManager, rotPacket, disguise);
+        // 实体编号与真身相同，移动数据包交由客户端直接作用于伪装体即可。
+        return rotPacket;
     }
 
 
@@ -146,7 +155,8 @@ public class DisguisePacketHandlers {
                     posRotPacket.isOnGround()
             );
         }
-        return sendDisguiseForPacket(networkManager, posRotPacket, disguise);
+        // 实体编号与真身相同，移动数据包交由客户端直接作用于伪装体即可。
+        return posRotPacket;
     }
 
     public static <T extends Packet<ClientGamePacketListener>> T sendDisguiseForPacket(DenizenNetworkManagerImpl networkManager, T packet, DisguiseCommand.TrackedDisguise disguise) {

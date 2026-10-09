@@ -11,7 +11,7 @@
 
 <div>
 <a href="https://github.com/DenizenScript/Denizen"><img src="badges/upstream.svg" alt="upstream"></a>
-<a href="#受支持的版本"><img src="https://img.shields.io/badge/Minecraft-7%20versions-4caf50" alt="Minecraft"></a>
+<a href="#受支持的版本"><img src="https://img.shields.io/badge/Minecraft-8%20versions-4caf50" alt="Minecraft"></a>
 <a href="../LICENSE.txt"><img src="https://img.shields.io/badge/license-MIT-9e9e9e" alt="license"></a>
 </div>
 
@@ -23,6 +23,7 @@
 <img src="https://img.shields.io/badge/1.21.11-81c784" alt="1.21.11">
 <img src="https://img.shields.io/badge/26.1.2-81c784" alt="26.1.2">
 <img src="https://img.shields.io/badge/26.2-81c784" alt="26.2">
+<img src="https://img.shields.io/badge/26.3-81c784" alt="26.3">
 </div>
 
 <br>
