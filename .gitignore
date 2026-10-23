@@ -8,5 +8,6 @@ dependency-reduced-pom.xml
 
 # Temporary/etc.
 *.bak
+javac.*.args
 *.exe
 .DS_Store
