@@ -169,6 +169,8 @@ mvn clean package -DBUILD_NUMBER=<upstream build>.<fork revision> -DBUILD_CLASS=
 
 The result lands in `target/`, for example `Denizen-1.3.4-b7311.1-DEV.jar`.
 
+The build also regenerates the upstream badge at the top of this page from the version in `pom.xml`, so it never has to be updated by hand. When upstream bumps its version, commit the regenerated `docs/badges/upstream.svg` along with the sync.
+
 ## Versioning
 
 The project version follows upstream unchanged. Fork revisions are recorded in the build number instead: in `Denizen-1.3.4-b7311.1-DEV`, `7311` is the upstream build this is based on and the trailing `.1` is the fork revision. This keeps our version numbers from colliding with upstream releases and avoids conflicts in `pom.xml` when merging.
