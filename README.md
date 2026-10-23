@@ -161,17 +161,17 @@ This subsystem is derived from [denizen-utilities](https://github.com/isnsest/de
 
 ## Building
 
-Requires JDK 17+ and all listed Spigot versions installed via [BuildTools](https://www.spigotmc.org/wiki/buildtools/).
+Requires JDK 25 — the 26.x modules compile against server jars built for Java 25 — and all listed Spigot versions installed via [BuildTools](https://www.spigotmc.org/wiki/buildtools/). Versions up to 1.21.11 must be built with `--remapped`.
 
 ```bash
 mvn clean package -DBUILD_NUMBER=<upstream build>.<fork revision> -DBUILD_CLASS=DEV
 ```
 
-The result lands in `target/`, for example `Denizen-1.3.3-b7303.1-DEV.jar`.
+The result lands in `target/`, for example `Denizen-1.3.4-b7311.1-DEV.jar`.
 
 ## Versioning
 
-The project version follows upstream unchanged. Fork revisions are recorded in the build number instead: in `Denizen-1.3.3-b7303.1-DEV`, `7303` is the upstream build this is based on and the trailing `.1` is the fork revision. This keeps our version numbers from colliding with upstream releases and avoids conflicts in `pom.xml` when merging.
+The project version follows upstream unchanged. Fork revisions are recorded in the build number instead: in `Denizen-1.3.4-b7311.1-DEV`, `7311` is the upstream build this is based on and the trailing `.1` is the fork revision. This keeps our version numbers from colliding with upstream releases and avoids conflicts in `pom.xml` when merging.
 
 The download links on the upstream project point at the official CI and do **not** include these changes.
 

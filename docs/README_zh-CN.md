@@ -161,17 +161,17 @@ git rebase upstream/dev
 
 ## 构建
 
-需要 JDK 17 及以上版本，并通过 [BuildTools](https://www.spigotmc.org/wiki/buildtools/) 构建全部所列的 Spigot 版本。
+需要 JDK 25——26.x 模块所依赖的服务端 jar 以 Java 25 编译——并通过 [BuildTools](https://www.spigotmc.org/wiki/buildtools/) 构建全部所列的 Spigot 版本，其中 1.21.11 及更早的版本需加上 `--remapped`。
 
 ```bash
 mvn clean package -DBUILD_NUMBER=<上游构建号>.<Fork 修订号> -DBUILD_CLASS=DEV
 ```
 
-产物位于 `target/`，形如 `Denizen-1.3.3-b7303.1-DEV.jar`。
+产物位于 `target/`，形如 `Denizen-1.3.4-b7311.1-DEV.jar`。
 
 ## 版本号
 
-项目版本号沿用上游，不作改动。Fork 的修订信息记录在构建号中：在 `Denizen-1.3.3-b7303.1-DEV` 中，`7303` 是所基于的上游构建号，末尾的 `.1` 是本 Fork 的修订号。这样既不会与上游的版本号撞车，合并上游时也不会在 `pom.xml` 上产生冲突。
+项目版本号沿用上游，不作改动。Fork 的修订信息记录在构建号中：在 `Denizen-1.3.4-b7311.1-DEV` 中，`7311` 是所基于的上游构建号，末尾的 `.1` 是本 Fork 的修订号。这样既不会与上游的版本号撞车，合并上游时也不会在 `pom.xml` 上产生冲突。
 
 上游项目页面上的下载链接指向官方 CI，**不包含**本 Fork 的改动。
 
