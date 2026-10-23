@@ -80,6 +80,31 @@
                     <target>16</target>
                 </configuration>
             </plugin>
+            <plugin>
+                <!-- 构建时按上游版本号重新生成 README 顶部的 upstream 徽章，无须手动维护 -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.2.0</version>
+                <inherited>false</inherited>
+                <executions>
+                    <execution>
+                        <id>upstream-badge</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <java sourcefile="${project.basedir}/docs/badges/UpstreamBadge.java" fork="true" failonerror="true">
+                                    <jvmarg value="-Dfile.encoding=UTF-8"/>
+                                    <arg value="Denizen ${DENIZEN_VERSION}"/>
+                                    <arg file="${project.basedir}/docs/badges/upstream.svg"/>
+                                </java>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 

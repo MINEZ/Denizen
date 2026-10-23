@@ -169,6 +169,8 @@ mvn clean package -DBUILD_NUMBER=<上游构建号>.<Fork 修订号> -DBUILD_CLAS
 
 产物位于 `target/`，形如 `Denizen-1.3.4-b7311.1-DEV.jar`。
 
+构建时还会按 `pom.xml` 中的版本号重新生成本页顶部的 upstream 徽章，无须手动维护。上游提升版本号后，请将重新生成的 `docs/badges/upstream.svg` 随同步一并提交。
+
 ## 版本号
 
 项目版本号沿用上游，不作改动。Fork 的修订信息记录在构建号中：在 `Denizen-1.3.4-b7311.1-DEV` 中，`7311` 是所基于的上游构建号，末尾的 `.1` 是本 Fork 的修订号。这样既不会与上游的版本号撞车，合并上游时也不会在 `pom.xml` 上产生冲突。
