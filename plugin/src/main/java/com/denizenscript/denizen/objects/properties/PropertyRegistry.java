@@ -239,7 +239,7 @@ public class PropertyRegistry {
         registerItemProperty(ItemBlockMaterial.class, "block_state");
         registerItemProperty(ItemBook.class, "writable_book_content", "written_book_content");
         PropertyParser.registerProperty(ItemBookGeneration.class, ItemTag.class); // Part of "written_book_content"
-        registerItemProperty(ItemDisplayname.class, "custom_name");
+        registerItemProperty(ItemDisplayname.class); // 本 Fork：custom_name 原样保存在 components_patch 中，见 ItemComponentsPatch.isTextComponentSavedRaw
         registerItemProperty(ItemDurability.class, "damage");
         registerItemProperty(ItemCanDestroy.class, "can_break");
         PropertyParser.registerProperty(ItemCanPlaceOn.class, ItemTag.class); // Let "can_place_on" through, this doesn't cover the entire component
@@ -264,7 +264,7 @@ public class PropertyRegistry {
         registerItemProperty(ItemLock.class, "lock");
         registerItemProperty(ItemLodestoneLocation.class, "lodestone_tracker");
         registerItemProperty(ItemLodestoneTracked.class, "lodestone_tracker");
-        registerItemProperty(ItemLore.class, "lore");
+        registerItemProperty(ItemLore.class); // 本 Fork：lore 原样保存在 components_patch 中，见 ItemComponentsPatch.isTextComponentSavedRaw
         registerItemProperty(ItemMap.class, "map_id");
         PropertyParser.registerProperty(ItemNBT.class, ItemTag.class);
         registerItemProperty(ItemPatterns.class, "banner_patterns");

@@ -88,6 +88,12 @@ public class ItemDisplayname implements Property {
         return null;
     }
 
+    // 本 Fork：支持物品组件的版本上，自定义名称原样保存在 components_patch 中，见 ItemComponentsPatch.isTextComponentSavedRaw。
+    @Override
+    public String getPropertySavableValue() {
+        return ItemComponentsPatch.isTextComponentSavedRaw() ? null : getPropertyString();
+    }
+
     @Override
     public String getPropertyString() {
         if (hasDisplayName()) {
