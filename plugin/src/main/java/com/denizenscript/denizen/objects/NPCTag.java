@@ -1316,13 +1316,23 @@ public class NPCTag implements ObjectTag, Adjustable, InventoryHolder, EntityFor
         // Each item in the list can be either:
         // - An ElementTag for a permanent hologram line
         // - A map with "text" (ElementTag) and "duration" (DurationTag) keys for a temporary hologram line that will disappear after the specified duration
+        // When every item is an ElementTag and the NPC already has the same number of lines, the existing lines are updated in place,
+        // so the hologram (and the NPC's name) does not briefly disappear. Lines updated this way keep whether they were temporary.
         // @tags
         // <NPCTag.hologram_lines>
         // -->
         tagProcessor.registerMechanism("hologram_lines", false, ObjectTag.class, (object, mechanism, input) -> {
             HologramTrait hologram = object.getCitizen().getOrAddTrait(HologramTrait.class);
+            List<ObjectTag> values = new ArrayList<>(CoreUtilities.objectToList(input, mechanism.context));
+            // 行数不变且都是常驻行时逐行替换文字：clear 之后每次 addLine 都会撤下全部行（连同 NPC 的名称），下一刻再重新生成，头顶的文字会闪一下。
+            if (values.size() == hologram.getLines().size() && values.stream().noneMatch(value -> value.canBeType(MapTag.class))) {
+                for (int i = 0; i < values.size(); i++) {
+                    hologram.setLine(i, values.get(i).toString());
+                }
+                return;
+            }
             hologram.clear();
-            for (ObjectTag value : CoreUtilities.objectToList(input, mechanism.context)) {
+            for (ObjectTag value : values) {
                 if (!value.canBeType(MapTag.class)) {
                     hologram.addLine(value.toString());
                     continue;
