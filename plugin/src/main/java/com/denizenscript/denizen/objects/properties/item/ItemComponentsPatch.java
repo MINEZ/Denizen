@@ -1,6 +1,7 @@
 package com.denizenscript.denizen.objects.properties.item;
 
 import com.denizenscript.denizen.nms.NMSHandler;
+import com.denizenscript.denizen.nms.NMSVersion;
 import com.denizenscript.denizen.objects.ItemTag;
 import com.denizenscript.denizencore.objects.Mechanism;
 import com.denizenscript.denizencore.objects.core.ElementTag;
@@ -41,6 +42,14 @@ public class ItemComponentsPatch extends ItemProperty<MapTag> {
 
     public static void registerHandledComponent(String component) {
         propertyHandledComponents.add("minecraft:" + component);
+    }
+
+    // 本 Fork：在支持物品组件的版本上，物品名称（item_name）、自定义名称（custom_name）与物品描述（lore）原样保存在 components_patch 中，
+    // 不再由 item_name、display、lore 属性以格式化文本保存。格式化文本无法完整表示文本组件（例如显式设为 false 的格式、根节点与 extra 的层级），
+    // 物品保存为文本后再读回（例如记录的物品栏随服务器重启重新载入）时组件结构会改变，与原物品不再相同，因而无法堆叠。
+    // 这三个属性的标签与机制不受影响。
+    public static boolean isTextComponentSavedRaw() {
+        return NMSHandler.getVersion().isAtLeast(NMSVersion.v1_20);
     }
 
     static {

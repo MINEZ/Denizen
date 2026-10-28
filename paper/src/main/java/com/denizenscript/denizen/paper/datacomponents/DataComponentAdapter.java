@@ -69,7 +69,9 @@ public abstract class DataComponentAdapter<D extends ObjectTag, C extends DataCo
                 ItemTag.class, EMPTY_STRING_ARRAY, EMPTY_STRING_ARRAY, DataComponentAdapter.Property.class);
         DataComponentAdapter.Property.currentlyRegisteringComponentAdapter = null;
         String componentName = adapter.componentType.key().asMinimalString();
-        ItemComponentsPatch.registerHandledComponent(componentName);
+        if (!adapter.isSavedRaw()) {
+            ItemComponentsPatch.registerHandledComponent(componentName);
+        }
         if (!adapter.name.equals(componentName)) {
             COMPONENTS_BY_PROPERTY.put(adapter.name, adapter.componentType);
         }
@@ -108,6 +110,11 @@ public abstract class DataComponentAdapter<D extends ObjectTag, C extends DataCo
     public abstract void setValue(ItemStack item, D value, Mechanism mechanism);
 
     public boolean isDefaultValue(D value) {
+        return false;
+    }
+
+    // 本 Fork：为 true 时，该组件原样保存在 components_patch 中，而不是由本属性保存。用于无法从 Denizen 的值完整还原的组件，见 ItemComponentsPatch.isTextComponentSavedRaw。
+    public boolean isSavedRaw() {
         return false;
     }
 
@@ -208,6 +215,11 @@ public abstract class DataComponentAdapter<D extends ObjectTag, C extends DataCo
         @Override
         public boolean isDefaultValue(D value) {
             return DataComponentAdapter.this.isDefaultValue(value);
+        }
+
+        @Override
+        public String getPropertySavableValue() {
+            return isSavedRaw() ? null : super.getPropertySavableValue();
         }
 
         @Override

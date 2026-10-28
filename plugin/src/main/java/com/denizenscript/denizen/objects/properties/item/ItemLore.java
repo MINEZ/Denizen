@@ -92,6 +92,12 @@ public class ItemLore implements Property {
         return new ListTag(lore, true);
     }
 
+    // 本 Fork：支持物品组件的版本上，物品描述原样保存在 components_patch 中，见 ItemComponentsPatch.isTextComponentSavedRaw。
+    @Override
+    public String getPropertySavableValue() {
+        return ItemComponentsPatch.isTextComponentSavedRaw() ? null : getPropertyString();
+    }
+
     @Override
     public String getPropertyString() {
         if (hasLore()) {

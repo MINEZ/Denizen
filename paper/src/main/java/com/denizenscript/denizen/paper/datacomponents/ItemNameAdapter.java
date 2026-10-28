@@ -1,5 +1,6 @@
 package com.denizenscript.denizen.paper.datacomponents;
 
+import com.denizenscript.denizen.objects.properties.item.ItemComponentsPatch;
 import com.denizenscript.denizencore.objects.Mechanism;
 import com.denizenscript.denizencore.objects.core.ElementTag;
 import io.papermc.paper.datacomponent.DataComponentTypes;
@@ -32,6 +33,12 @@ public class ItemNameAdapter extends DataComponentAdapter.Valued<ElementTag, Com
     public ElementTag processInputValue(Mechanism mechanism, ElementTag defaultInput) {
         // an empty string is valid input here (see Mechanism#hasValue)
         return defaultInput == null && mechanism.value != null ? new ElementTag("") : defaultInput;
+    }
+
+    // 本 Fork：物品名称原样保存在 components_patch 中，见 ItemComponentsPatch.isTextComponentSavedRaw。
+    @Override
+    public boolean isSavedRaw() {
+        return ItemComponentsPatch.isTextComponentSavedRaw();
     }
 
     @Override
