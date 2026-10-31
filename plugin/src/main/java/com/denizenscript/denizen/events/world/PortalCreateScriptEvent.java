@@ -46,7 +46,13 @@ public class PortalCreateScriptEvent extends BukkitScriptEvent implements Listen
         if (path.eventArgLowerAt(2).equals("because") && !runGenericCheck(path.eventArgLowerAt(3), reason.asString())) {
             return false;
         }
-        if (!runInCheck(path, event.getBlocks().get(0).getLocation())) {
+        // The block list can be empty, e.g. for END_PLATFORM when the platform needs no changes.
+        if (event.getBlocks().isEmpty()) {
+            if (path.switches.containsKey("in") || path.switches.containsKey("location_flagged")) {
+                return false;
+            }
+        }
+        else if (!runInCheck(path, event.getBlocks().get(0).getLocation())) {
             return false;
         }
         return super.matches(path);
