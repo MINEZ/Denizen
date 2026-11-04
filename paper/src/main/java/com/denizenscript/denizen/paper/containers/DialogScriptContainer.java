@@ -268,7 +268,7 @@ public class DialogScriptContainer extends ScriptContainer {
     // - tooltip: <text>
     // - width: <number>
     // - condition: <tag> (the button is only included when this returns 'true')
-    // - type: SCRIPT, RUN_COMMAND, OPEN_URL, COPY_TO_CLIPBOARD
+    // - type: SCRIPT, RUN_COMMAND, DYNAMIC/RUN_COMMAND, OPEN_URL, COPY_TO_CLIPBOARD
     //
     // ACTION TYPES:
     //
@@ -296,6 +296,12 @@ public class DialogScriptContainer extends ScriptContainer {
     // RUN_COMMAND
     // Runs a command when clicked.
     // command: spawn
+    //
+    // DYNAMIC/RUN_COMMAND
+    // Runs a command built from the dialog's inputs when clicked, sent by the client.
+    // Each '$(key)' in the template is replaced on the client with the value of the input that has that key,
+    // so the command goes through the proxy like one typed in chat, which a script button cannot do.
+    // template: bind $(code)
     //
     // OPEN_URL
     // Opens a web URL.
@@ -746,6 +752,12 @@ public class DialogScriptContainer extends ScriptContainer {
                 String command = getString(section, "command", context);
                 if (command != null) {
                     action = DialogAction.staticAction(ClickEvent.runCommand(command));
+                }
+            }
+            case "DYNAMIC/RUN_COMMAND" -> {
+                String template = getString(section, "template", context);
+                if (template != null) {
+                    action = DialogAction.commandTemplate(template);
                 }
             }
             case "OPEN_URL" -> {
