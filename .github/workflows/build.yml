@@ -93,6 +93,16 @@ jobs:
           key: maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: maven-
 
+      # 使用固定的 Maven 3.9.11，与本机构建一致。运行环境自带的 Maven 3.10 会核对本地仓库中的文件来自哪个远程仓库：paper 模块的
+      # pom.xml 没有父 POM，只列了 PaperMC 仓库，它依赖的 citizens-main 是先构建的 plugin 模块从 maven.citizensnpcs.co 下载的，
+      # Maven 3.10 便拒绝在 paper 模块中使用（首次构建因此失败），3.9.11 照常使用。上游的 paper/pom.xml 相同，这里不改它，以免同步时冲突。
+      - name: Set up Maven
+        run: |
+          curl -fsSL -o maven.tar.gz https://archive.apache.org/dist/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.tar.gz
+          echo "bcfe4fe305c962ace56ac7b5fc7a08b87d5abd8b7e89027ab251069faebee516b0ded8961445d6d91ec1985dfe30f8153268843c89aa392733d1a3ec956c9978  maven.tar.gz" | sha512sum -c -
+          tar -xzf maven.tar.gz -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/apache-maven-3.9.11/bin" >> "$GITHUB_PATH"
+
       - name: Build
         run: mvn -B clean package -DBUILD_NUMBER="${BUILD_NUMBER:-Unknown}" -DBUILD_CLASS=DEV
         env:
