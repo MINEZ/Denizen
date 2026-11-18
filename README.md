@@ -173,7 +173,7 @@ The result lands in `target/`, for example `Denizen-1.3.4-b7313.1-DEV.jar`.
 
 The build also regenerates the upstream badge at the top of this page from the version in `pom.xml`, so it never has to be updated by hand. When upstream bumps its version, commit the regenerated `docs/badges/upstream.svg` along with the sync.
 
-Every push to `dev` is also built by [GitHub Actions](https://github.com/MINEZ/Denizen/actions), which generates the Spigot versions with BuildTools, keeps them cached, and uploads the plugin jar as an artifact. Releases are built by running that workflow by hand with the build number filled in, and carry the jar it produces. The first run, or any run after the cache has expired, takes over an hour to generate every Spigot version; a weekly scheduled run keeps the cache alive.
+Every push to `dev` is also built by [GitHub Actions](https://github.com/MINEZ/Denizen/actions), which generates the Spigot versions with BuildTools, keeps them cached, and uploads the plugin jar as an artifact. The build number comes from `.github/build-number` (for example `7314.1`), so every build is named after the version it is; bump it along with each upstream sync or code change. Releases carry the jar built from the release commit. The first run, or any run after the cache has expired, takes over an hour to generate every Spigot version; a weekly scheduled run keeps the cache alive.
 
 ## Versioning
 
