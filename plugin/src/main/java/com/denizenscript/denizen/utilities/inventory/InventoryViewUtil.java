@@ -61,4 +61,15 @@ public class InventoryViewUtil {
     public static Inventory getInventory(InventoryView view, int slot) {
         return get(GET_INVENTORY, view, slot);
     }
+
+    private static final MethodHandle SET_TITLE = ReflectionHelper.getMethodHandle(InventoryView.class, "setTitle", String.class);
+
+    public static void setTitle(InventoryView view, String title) {
+        try {
+            SET_TITLE.invoke(view, title);
+        }
+        catch (Throwable e) {
+            Debug.echoError(e);
+        }
+    }
 }

@@ -2649,6 +2649,30 @@ public class PlayerTag implements ObjectTag, Adjustable, EntityFormObject, Flagg
 
         // <--[mechanism]
         // @object PlayerTag
+        // @name open_inventory_title
+        // @input ElementTag
+        // @description
+        // Changes the title of the inventory the player currently has open, keeping the same inventory and its contents.
+        // Unlike the InventoryTag.title property, which gives a copy of the inventory with the new title, this changes only what the player sees,
+        // so it suits live containers opened directly, such as <LocationTag.ce_storage_inventory>, which have no title of their own.
+        // Does nothing if the player only has their own inventory open.
+        // @tags
+        // <PlayerTag.open_inventory>
+        // @Example
+        // # Open a CraftEngine storage block's inventory with a title.
+        // - inventory open destination:<[location].ce_storage_inventory>
+        // - adjust <player> open_inventory_title:Sentry Gun
+        // -->
+        registerOnlineOnlyMechanism("open_inventory_title", ElementTag.class, (object, mechanism, input) -> {
+            InventoryView view = object.getPlayerEntity().getOpenInventory();
+            if (InventoryViewUtil.getType(view) == InventoryType.CRAFTING) {
+                return;
+            }
+            InventoryViewUtil.setTitle(view, input.asString());
+        });
+
+        // <--[mechanism]
+        // @object PlayerTag
         // @name whitelisted
         // @input ElementTag(Boolean)
         // @description
