@@ -21,7 +21,10 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class CommandScriptHelper implements Listener {
@@ -108,13 +111,39 @@ public class CommandScriptHelper implements Listener {
 
     @EventHandler
     public void scriptReload(ScriptReloadEvent event) {
+        StringBuilder signature = new StringBuilder();
+        List<CommandScriptContainer> enabled = new ArrayList<>();
         for (CommandScriptContainer script : commandScripts.values()) {
             if (script.shouldEnable()) {
                 registerDenizenCommand(new DenizenCommand(script));
+                enabled.add(script);
             }
         }
+        // MINEZ: the client's command tree only depends on the command names, aliases and permissions. When none of these
+        // changed, skip resending it to every online player: Paper's syncCommands builds and sends a tree per player on the
+        // main thread, which took about 2 seconds on a busy server on every script reload. The server-side dispatcher is
+        // already updated through the command map, so commands still run the reloaded scripts.
+        enabled.sort(Comparator.comparing(CommandScriptContainer::getCommandName));
+        for (CommandScriptContainer script : enabled) {
+            signature.append(script.getCommandName()).append('|').append(script.getAliases()).append('|')
+                    .append(script.getPermission()).append('\n');
+        }
+        String newSignature = signature.toString();
+        if (newSignature.equals(lastCommandSignature)) {
+            Debug.log("Command scripts unchanged, skipped resending the command tree to online players.");
+            return;
+        }
+        lastCommandSignature = newSignature;
+        long start = System.nanoTime();
         syncDenizenCommands();
+        Debug.log("Resent the command tree to " + Bukkit.getOnlinePlayers().size() + " online players in "
+                + (System.nanoTime() - start) / 1_000_000 + "ms.");
     }
+
+    /**
+     * MINEZ: the command names, aliases and permissions as of the last time the command tree was sent to online players.
+     */
+    public static String lastCommandSignature = null;
 
     public static final Method syncCommandsMethod;
 
