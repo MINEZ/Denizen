@@ -120,7 +120,7 @@ public class PlayerFlagHandler implements Listener {
             }.runTaskLater(Denizen.getInstance(), 10);
             return;
         }
-        if (!cache.tracker.modified) {
+        if (cache.tracker == null || !cache.tracker.modified) {
             expireTask.runTaskLater(Denizen.getInstance(), 1);
             return;
         }
@@ -263,7 +263,8 @@ public class PlayerFlagHandler implements Listener {
     public static void saveAllNow(boolean lockUntilDone) {
         for (Map.Entry<UUID, CachedPlayerFlag> entry : playerFlagTrackerCache.entrySet()) {
             CachedPlayerFlag flags = entry.getValue();
-            if (flags.tracker.modified) {
+            // 玩家的标记仍在异步读取时 tracker 为 null，此时没有需要保存的改动。
+            if (flags.tracker != null && flags.tracker.modified) {
                 if (!lockUntilDone && flags.savingNow.get() || flags.loadingNow.get()) {
                     continue;
                 }

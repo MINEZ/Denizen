@@ -126,7 +126,7 @@ public class PlayerCustomClickScriptEvent extends ScriptEvent {
         @EventHandler
         public void onDialogClick(PlayerCustomClickEvent event) {
             ButtonPathInfo pathInfo = parseButtonKey(event.getIdentifier());
-            DialogScriptHelper.DialogData dialogData = DialogScriptHelper.getDialogData(event.getCommonConnection());
+            DialogScriptHelper.DialogData dialogData = DialogScriptHelper.getDialogData(event.getCommonConnection(), pathInfo.scriptName());
             instance.event = event;
             instance.dialogData = dialogData;
             instance.buttonId = pathInfo.buttonId();

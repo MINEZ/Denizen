@@ -377,6 +377,7 @@ public class DialogScriptContainer extends ScriptContainer {
         final Map<String, YamlConfiguration> proceduralData = new HashMap<>();
         final DialogScriptHelper.DialogData dialogData = new DialogScriptHelper.DialogData();
         dialogData.connection = connection;
+        dialogData.scriptName = getName();
         proceduralData.put("inputs", getConfigurationSection("inputs"));
         proceduralData.put("bodies", getConfigurationSection("bodies"));
         proceduralData.put("buttons", getConfigurationSection("buttons"));

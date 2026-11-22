@@ -11,6 +11,7 @@ package com.denizenscript.denizen.paper.containers;
 
 import com.denizenscript.denizencore.objects.ObjectTag;
 import com.denizenscript.denizencore.objects.core.MapTag;
+import com.denizenscript.denizencore.utilities.CoreUtilities;
 import com.denizenscript.denizencore.utilities.YamlConfiguration;
 import com.denizenscript.denizencore.utilities.text.StringHolder;
 import io.papermc.paper.connection.PlayerCommonConnection;
@@ -28,6 +29,8 @@ import java.util.UUID;
  * <p>
  * 对话框打开时会把“这次展示用的配置”记录到 {@link #dialogDataMap} 中，
  * 因为玩家点击按钮时客户端只回传一个 key，服务端需要凭它反查按钮脚本与各输入项的类型。
+ * 数据按对话框脚本分别记录：服务端刚展示新的对话框时，客户端仍可能送来旧对话框上的点击，
+ * 若只记最近一次展示的数据，这次点击会读到新对话框的定义与配置。
  * 玩家退出时移除对应的数据，见 PlayerCustomClickScriptEvent 中的退出监听。
  */
 @SuppressWarnings("UnstableApiUsage")
@@ -37,22 +40,34 @@ public class DialogScriptHelper {
      * 以玩家 UUID 而非连接对象作为键：连接对象在服务端内部可能被替换，
      * 按其身份索引会查不到本次展示所记录的数据。
      */
-    public static final Map<UUID, DialogData> dialogDataMap = new HashMap<>();
+    public static final Map<UUID, Map<String, DialogData>> dialogDataMap = new HashMap<>();
+
+    /** 每个玩家最近一次展示的数据所用的键，供点击中不含对话框脚本名称时使用。 */
+    public static final String LATEST_KEY = "";
 
     /** 取出连接对应的玩家 UUID，非游戏阶段的连接没有玩家，返回 null。 */
     public static UUID keyFor(PlayerCommonConnection connection) {
         return connection instanceof PlayerGameConnection gameConnection ? gameConnection.getPlayer().getUniqueId() : null;
     }
 
-    public static DialogData getDialogData(PlayerCommonConnection connection) {
+    /** 取出该玩家最近一次展示的指定对话框脚本的数据；scriptName 为 null 时取最近一次展示的任意对话框的数据。 */
+    public static DialogData getDialogData(PlayerCommonConnection connection, String scriptName) {
         UUID key = keyFor(connection);
-        return key == null ? null : dialogDataMap.get(key);
+        Map<String, DialogData> byScript = key == null ? null : dialogDataMap.get(key);
+        if (byScript == null) {
+            return null;
+        }
+        return byScript.get(scriptName == null ? LATEST_KEY : CoreUtilities.toLowerCase(scriptName));
     }
 
     public static void putDialogData(PlayerCommonConnection connection, DialogData data) {
         UUID key = keyFor(connection);
         if (key != null) {
-            dialogDataMap.put(key, data);
+            Map<String, DialogData> byScript = dialogDataMap.computeIfAbsent(key, k -> new HashMap<>());
+            byScript.put(LATEST_KEY, data);
+            if (data.scriptName != null) {
+                byScript.put(CoreUtilities.toLowerCase(data.scriptName), data);
+            }
         }
     }
 
@@ -64,6 +79,9 @@ public class DialogScriptHelper {
     public static class DialogData {
 
         public PlayerCommonConnection connection;
+
+        /** 展示的对话框脚本名称。 */
+        public String scriptName;
 
         /** 输入项的键到类型的映射，用于点击时按正确类型读取回传值。 */
         public Map<String, InputType> inputs;
