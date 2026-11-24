@@ -25,7 +25,8 @@
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
-            <version>[26.3.build,)</version>
+            <!-- MINEZ：限定在 26.3 的正式构建之内。PaperMC 仓库中的 26.3-pre-2.build.0-alpha 按 Maven 的排序高于 26.3.build.*，开放的范围会解析到它（缺少 WorldClock 等）。 -->
+            <version>[26.3.build.254-stable,26.3.build.99999-stable]</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

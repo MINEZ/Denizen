@@ -112,7 +112,7 @@ jobs:
             echo "构建号“$build_number”的格式不对，应为 <上游构建号>.<Fork 修订号>，例如 7314.1" >&2
             exit 1
           fi
-          # -U：paper 模块的 paper-api 版本是范围 [26.3.build,)，缓存中的版本列表可能过时，解析到较旧的构建（缺少新 API，例如 254 起才有的 WorldClock）。
+          # -U：paper 模块的 paper-api 版本是范围 [26.3.build,)，缓存中的版本列表可能过时，解析不到新近的构建（paper/pom.xml 中限定了上下限，见那里的注释）。
           mvn -B -U clean package -DBUILD_NUMBER="$build_number" -DBUILD_CLASS=DEV
         env:
           BUILD_NUMBER: ${{ inputs.build_number }}
