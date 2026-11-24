@@ -80,6 +80,7 @@ Usage documentation lives in the meta comments in the source and is published au
 | `<EntityTag.ce_storage_inventory[(<data_key>)]>` | Tag | Added |
 | `<EntityTag.ce_storage_inventory_data_keys>` | Tag | Added |
 | `PlayerTag.open_inventory_title` | Mechanism | Added |
+| `<EntityTag.find_path[<location>]>` | Tag | Added |
 | `<ItemTag.cooking_result[(<type>)]>` | Tag | Added |
 | `<ItemTag.cooking_recipe_id[(<type>)]>` | Tag | Added |
 | `<ItemTag.cooking_experience[(<type>)]>` | Tag | Added |

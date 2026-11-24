@@ -7,8 +7,10 @@ import com.denizenscript.denizen.objects.EntityTag;
 import com.denizenscript.denizen.objects.LocationTag;
 import com.denizenscript.denizen.paper.utilities.MatcherTargetGoal;
 import com.denizenscript.denizencore.objects.core.ElementTag;
+import com.denizenscript.denizencore.objects.core.ListTag;
 import com.denizenscript.denizencore.objects.core.MapTag;
 import com.denizenscript.denizencore.utilities.CoreUtilities;
+import com.destroystokyo.paper.entity.Pathfinder;
 import com.destroystokyo.paper.entity.ai.Goal;
 import com.destroystokyo.paper.entity.ai.GoalType;
 import io.papermc.paper.entity.Shearable;
@@ -163,6 +165,50 @@ public class PaperEntityExtensions {
             // -->
             EntityTag.tagProcessor.registerTag(ElementTag.class, LocationTag.class, "collides_at", (attribute, entity, location) -> {
                 return new ElementTag(entity.getBukkitEntity().collidesAt(location));
+            });
+
+            // <--[tag]
+            // @attribute <EntityTag.find_path[<location>]>
+            // @returns MapTag
+            // @group paper
+            // @Plugin Paper
+            // @description
+            // Returns the path the mob's own pathfinder finds to the given location (it does not make the mob move), as a map:
+            // "reachable" is whether the path reaches the location, "final" is the last point of the path
+            // (the location itself, or the reachable point closest to it), and "points" is a list of every point along the path.
+            // Points are block locations of where the mob's feet would be.
+            // Returns null if no path can be found at all (for example, the mob is not on a walkable block).
+            // As in vanilla, the search only covers the area within the mob's follow range attribute.
+            // -->
+            EntityTag.tagProcessor.registerTag(MapTag.class, LocationTag.class, "find_path", (attribute, entity, location) -> {
+                if (!entity.isSpawnedOrValidForTag()) {
+                    attribute.echoError("Entity is not spawned, but tag 'find_path' requires the entity be spawned, for entity: " + entity.debuggable());
+                    return null;
+                }
+                if (!(entity.getBukkitEntity() instanceof Mob mob)) {
+                    attribute.echoError("Entity " + entity + " is not a mob.");
+                    return null;
+                }
+                if (location.getWorld() == null || !location.getWorld().equals(mob.getWorld())) {
+                    attribute.echoError("Location " + location + " is not in the same world as " + entity + ".");
+                    return null;
+                }
+                Pathfinder.PathResult path = mob.getPathfinder().findPath(location);
+                if (path == null) {
+                    return null;
+                }
+                MapTag result = new MapTag();
+                result.putObject("reachable", new ElementTag(path.canReachFinalPoint()));
+                Location finalPoint = path.getFinalPoint();
+                if (finalPoint != null) {
+                    result.putObject("final", new LocationTag(finalPoint));
+                }
+                ListTag points = new ListTag();
+                for (Location point : path.getPoints()) {
+                    points.addObject(new LocationTag(point));
+                }
+                result.putObject("points", points);
+                return result;
             });
 
             // <--[mechanism]

@@ -80,6 +80,7 @@ git rebase upstream/dev
 | `<EntityTag.ce_storage_inventory[(<data_key>)]>` | 标签 | 新增 |
 | `<EntityTag.ce_storage_inventory_data_keys>` | 标签 | 新增 |
 | `PlayerTag.open_inventory_title` | 机制 | 新增 |
+| `<EntityTag.find_path[<location>]>` | 标签 | 新增 |
 | `<ItemTag.cooking_result[(<type>)]>` | 标签 | 新增 |
 | `<ItemTag.cooking_recipe_id[(<type>)]>` | 标签 | 新增 |
 | `<ItemTag.cooking_experience[(<type>)]>` | 标签 | 新增 |
