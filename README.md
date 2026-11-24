@@ -81,6 +81,10 @@ Usage documentation lives in the meta comments in the source and is published au
 | `<EntityTag.ce_storage_inventory_data_keys>` | Tag | Added |
 | `PlayerTag.open_inventory_title` | Mechanism | Added |
 | `<EntityTag.find_path[<location>]>` | Tag | Added |
+| `<WorldTag.clock_time[<clock>]>` | Tag | Added |
+| `<WorldTag.clock_paused[<clock>]>` | Tag | Added |
+| `<WorldTag.clock_rate[<clock>]>` | Tag | Added |
+| `WorldTag.clock` | Mechanism | Added |
 | `<ItemTag.cooking_result[(<type>)]>` | Tag | Added |
 | `<ItemTag.cooking_recipe_id[(<type>)]>` | Tag | Added |
 | `<ItemTag.cooking_experience[(<type>)]>` | Tag | Added |
