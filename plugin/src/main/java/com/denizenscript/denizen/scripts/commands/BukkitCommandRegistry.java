@@ -4,6 +4,7 @@ import com.denizenscript.denizen.nms.NMSHandler;
 import com.denizenscript.denizen.nms.NMSVersion;
 import com.denizenscript.denizen.scripts.commands.core.CooldownCommand;
 import com.denizenscript.denizen.scripts.commands.core.ResetCommand;
+import com.denizenscript.denizen.scripts.commands.core.SecretDataWebGetCommand;
 import com.denizenscript.denizen.scripts.commands.core.ZapCommand;
 import com.denizenscript.denizen.scripts.commands.entity.*;
 import com.denizenscript.denizen.scripts.commands.item.*;
@@ -86,6 +87,8 @@ public class BukkitCommandRegistry {
         registerCommand(CooldownCommand.class);
         registerCommand(ResetCommand.class);
         registerCommand(ZapCommand.class);
+        // Replaces the core 'webget' (registered earlier by DenizenCore under the same name), adding SecretTag support to 'data:'.
+        registerCommand(SecretDataWebGetCommand.class);
         // entity
         registerCommand(AgeCommand.class);
         registerCommand(AttachCommand.class);

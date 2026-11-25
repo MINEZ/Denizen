@@ -22,6 +22,7 @@ public class PropertyRegistry {
         BukkitMapExtensions.register();
         BukkitQueueExtensions.register();
         BukkitScriptExtensions.register();
+        BukkitSecretExtensions.register();
     }
 
     public static void registerMainProperties() {
